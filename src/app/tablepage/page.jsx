@@ -1,69 +1,65 @@
 "use client";
-import Link from 'next/link'
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import React from 'react'
-
-function TablePage() {
-  const [data, setData] = useState([]);
+const TablePage = () => {
   const searchParams = useSearchParams();
-  const fileName = searchParams.get("file") || "CSV Data";
+  const fileName = searchParams.get("file"); // 📌 รับชื่อไฟล์จาก URL
+  const [data, setData] = useState({ columns: [], rows: [] });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // โหลดข้อมูลจาก API
+    if (!fileName) return;
+
     const fetchData = async () => {
-      const res = await fetch("/api/getData");
-      const result = await res.json();
-      if (res.ok) {
-        setData(result.data);
+      try {
+        const res = await fetch(`/api/get-data?file=${fileName}`);
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.error || "Failed to fetch data");
+        }
+
+        setData({ columns: result.columns, rows: result.rows });
+      } catch (error) {
+        console.error("Fetch Data Error:", error);
+        alert("❌ โหลดข้อมูลล้มเหลว!");
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchData();
-  }, []);
+  }, [fileName]);
+
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">{fileName}</h2>
-      {data.length > 0 ? (
-        <table className="border-collapse border border-gray-400">
+    <div className="p-8">
+      <h1 className="text-2xl font-bold text-[#2B3A67] mb-4">📊 ตารางข้อมูล: {fileName}</h1>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <table className="w-full border-collapse border border-gray-300">
           <thead>
-            <tr>
-              {Object.keys(data[0]).map((key) => (
-                <th key={key} className="border border-gray-300 px-2 py-1">{key}</th>
+            <tr className="bg-gray-200">
+              {data.columns.map((col, index) => (
+                <th key={index} className="border border-gray-300 p-2">{col}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {data.map((row, index) => (
-              <tr key={index}>
-                {Object.values(row).map((value, i) => (
-                  <td key={i} className="border border-gray-300 px-2 py-1">{value}</td>
+            {data.rows.map((row, rowIndex) => (
+              <tr key={rowIndex} className="hover:bg-gray-100">
+                {data.columns.map((col, colIndex) => (
+                  <td key={colIndex} className="border border-gray-300 p-2">{row[col] || "-"}</td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
-       
-      ) : (
-        <p>Loading...</p>
       )}
-      <div>
-      <ul className='list-none p-5 flex space-x-4' >
-        <li >
-          <Link href="/Favorites">
-            <span>Loaddata</span>
-          </Link>
-        </li>
-        <li >
-          <Link href="/TransformData">
-            <span>Transform Data</span>
-          </Link>
-        </li>
-        
-      </ul>
-      </div>
     </div>
-  )
-}
+  );
+};
 
-export default TablePage
+export default TablePage;
