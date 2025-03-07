@@ -9,6 +9,9 @@ export default function Toolbar ({ onAddText }) {
   const [activePanel, setActivePanel] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [checked1, setChecked1] = useState(false);
+  const [checked2, setChecked2] = useState(false);
+
 
   const toggleDropdown = (dropdownId) => {
     setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
@@ -16,12 +19,17 @@ export default function Toolbar ({ onAddText }) {
 
   const handleZoomIn = () => {
     setZoomLevel(prev => Math.min(prev + 0.1, 2)); // จำกัดการซูมสูงสุดที่ 2x
+    setZoomLevel((prev) => Math.min(prev + 0.1, 2)); // เพิ่มซูมสูงสุดที่ 200%
   };
   
   const handleZoomOut = () => {
     setZoomLevel(prev => Math.max(prev - 0.1, 0.5)); // จำกัดการซูมต่ำสุดที่ 0.5x
+    setZoomLevel((prev) => Math.max(prev - 0.1, 0.1)); // ลดซูมต่ำสุดที่ 10%
   };
 
+  const handleSelectChange = (e) => {
+    setZoomLevel(parseFloat(e.target.value));
+  };
 
 
   return (
@@ -35,6 +43,7 @@ export default function Toolbar ({ onAddText }) {
             {/* Toolbar */}
             <div className=" flex items-center bg-[#E3E3E3] h-[2rem]  z-50 ">
                 <Dropdown
+              <Dropdown
                 label="File"
                 items={["New Report", "Open", "Save",{ label: "Export", subItems: ["PDF", "Excel", "CSV", "JPEG"] }]}
                 />
@@ -48,6 +57,15 @@ export default function Toolbar ({ onAddText }) {
                 <button 
                 onClick={() => setActivePanel(activePanel === "insert" ? null : "insert")}
                 className="px-4 text-[#2B3A67] h-full  hover:bg-gray-300 focus:border-b-[0.15rem] focus:border-[#2B3A67] focus:font-semibold"
+              />
+
+              {['edit', 'insert', 'arrange', 'view'].map((panel) => (
+                <button
+                  key={panel}
+                  onClick={() => setActivePanel(panel)}
+                  className={`px-4 text-[#2B3A67] h-full hover:bg-gray-300 border-b-[0.15rem] ${
+                    activePanel === panel ? 'font-semibold border-[#2B3A67]' : 'border-transparent'
+                  }`}
                 >
                     Insert
                 </button>
@@ -64,7 +82,9 @@ export default function Toolbar ({ onAddText }) {
                 className="px-4 text-[#2B3A67] h-full  hover:bg-gray-300 focus:border-b-[0.15rem] focus:border-[#2B3A67] focus:font-semibold"
                 >
                     View
+                  {panel.charAt(0).toUpperCase() + panel.slice(1)}
                 </button>
+              ))}
             </div>
             
             {/* Edit Panel */}
@@ -329,12 +349,328 @@ export default function Toolbar ({ onAddText }) {
             )}
 
             {/* View Panel */}
+            {/* Arrange */}
+            {activePanel === "arrange" && (
+                <div className="relative bg-[#F5F5F5]  h-[2.5rem] flex ">
+
+              {/* Bring froward */}
+              <div className="relative">
+                <button 
+                  onClick={() => toggleDropdown("Bring froward")} 
+                  className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2"
+                >
+                     <img 
+                        src="/Bring-froward.png" alt="Bringfroward" style={{ width: '38px', height: 'auto' }} 
+                        className=" px-2 max-h-full object-contain "
+                      />
+
+                    Bring froward
+
+                    <svg className="px-2" width="30" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.75 4.125L5.5 6.875L8.25 4.125" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    
+                </button>
+                
+                {isDropdownOpen === "Bring froward" && (
+                    <ul className="absolute top-full mt-1 ml-1 bg-white text-black shadow-lg rounded-md w-45 z-50 border border-gray-300">
+            
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Bring-froward.png" alt="Bringfroward" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Bring froward
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Bring-to-front.png" alt="Bringtofront" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Bring to front
+                        </li>
+                    </ul>
+                    )}
+                </div>
+                
+                 {/* Send Backward */}
+              <div className="relative">
+                <button 
+                  onClick={() => toggleDropdown("Send Backward")} 
+                  className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2"
+                >
+                     <img 
+                        src="/Send-Backward.png" alt="SendBackward" style={{ width: '38px', height: 'auto' }} 
+                        className=" px-2 max-h-full object-contain "
+                      />
+
+                    Send Backward
+
+                    <svg className="px-2" width="30" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.75 4.125L5.5 6.875L8.25 4.125" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    
+                </button>
+                
+                {isDropdownOpen === "Send Backward" && (
+                    <ul className="absolute top-full mt-1 ml-1 bg-white text-black shadow-lg rounded-md w-45 z-50 border border-gray-300">
+            
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Send-Backward.png" alt="SendBackward" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Send Backward
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Sent-to-Back.png" alt="SenttoBack" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Sent to Back
+                        </li>
+                    </ul>
+                    )}
+                </div>
+
+                 {/* Group  */}
+              <div className="relative">
+                <button 
+                  onClick={() => toggleDropdown("Group")} 
+                  className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2"
+                >
+                     <img 
+                        src="/Group.png" alt="Group" style={{ width: '38px', height: 'auto' }} 
+                        className=" px-2 max-h-full object-contain "
+                      />
+
+                    Group 
+
+                    <svg className="px-2" width="30" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.75 4.125L5.5 6.875L8.25 4.125" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    
+                </button>
+                
+                {isDropdownOpen === "Group" && (
+                    <ul className="absolute top-full mt-1 ml-1 bg-white text-black shadow-lg rounded-md w-[9rem] z-50 border border-gray-300">
+            
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Group.png" alt="Group" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            group
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/ungroup.png" alt="ungroup" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            ungroup
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/merge.png" alt="merge" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            merge
+                        </li>
+                    </ul>
+                    )}
+                </div>
+
+                 {/* Align  */}
+              <div className="relative">
+                <button 
+                  onClick={() => toggleDropdown("Align")} 
+                  className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2"
+                >
+                     <img 
+                        src="/Align-left.png" alt="Align-left" style={{ width: '38px', height: 'auto' }} 
+                        className=" px-2 max-h-full object-contain "
+                      />
+
+                    Align 
+
+                    <svg className="px-2" width="30" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.75 4.125L5.5 6.875L8.25 4.125" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    
+                </button>
+                
+                {isDropdownOpen === "Align" && (
+                    <ul className="absolute top-full mt-1 ml-1 bg-white text-black shadow-lg rounded-md w-[13rem] z-50 border border-gray-300">
+            
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Align-left.png" alt="Align-left" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Align left
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Align-right.png" alt="Align-right" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Align right
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Horizontal-center.png" alt="Horizontal-center" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Horizontal center
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Vertical-center.png" alt="Vertical-center" style={{ width: '38px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Vertical center
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Align-bottom.png" alt="Align-bottom" style={{ width: '35px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Align bottom
+                        </li>
+
+                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
+                            <img 
+                                src="/Align-top.png" alt="Align-top" style={{ width: '35px', height: 'auto' }} 
+                                className=" px-2 max-h-full object-contain "
+                            />
+                            Align top
+                        </li>
+                    </ul>
+                    )}
+                </div>
+              </div>
+            )}
+
+            {/* View */}
             {activePanel === "view" && (
                 <div className="bg-gray-200 p-2 shadow-md flex space-x-2">
                 <button className="px-4 py-2 bg-gray-500 text-white rounded-md">Zoom In</button>
                 <button className="px-4 py-2 bg-gray-500 text-white rounded-md">Zoom Out</button>
                 <button className="px-4 py-2 bg-gray-500 text-white rounded-md">Fullscreen</button>
+                <div className="relative bg-[#F5F5F5]  h-[2.5rem] flex ">
+
+                    {/* fit all */}
+                    <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center text-sm"> 
+                    <img 
+                        src="/fit_all.png" alt="fit-all" style={{ width: '38px', height: 'auto' }} 
+                        className=" px-2 max-h-full object-contain "
+                     />
+                   fit all
+                </button>
+
+                {/* fit width */}
+                <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm"> 
+                    <img 
+                        src="/fit_width.png" alt="fit-width" style={{ width: '38px', height: 'auto' }} 
+                        className=" px-2 max-h-full object-contain "
+                     />
+                   fit width
+                </button>
+
+                {/* zoom */}
+                <div className="flex px-2 h-full items-center border-r-2 text-sm"> 
+                <span className="text-black">Zoom</span>
+                  <div className="relative px-2">
+                    <input
+                      type="text"
+                      value={`${Math.round(zoomLevel * 100)}%`}
+                      readOnly
+                      className="w-16 text-center border rounded-md"
+                    />
+
+                    <svg
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    
+                    <select
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={handleSelectChange}
+                      value={zoomLevel}
+                    >
+                      <option value="0.25">25%</option>
+                      <option value="0.5">50%</option>
+                      <option value="0.75">75%</option>
+                      <option value="1">100%</option>
+                      <option value="1.5">150%</option>
+                      <option value="2">200%</option>
+                    </select>
+                  </div>
+
                 </div>
+
+              {/* More option */}
+              <div className="relative">
+                <button 
+                  onClick={() => toggleDropdown("More option")} 
+                  className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm"
+                >
+                    More option
+
+                    <svg className="px-2" width="30" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.75 4.125L5.5 6.875L8.25 4.125" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    
+                </button>
+                
+                {isDropdownOpen === "More option" && (
+                    <div className="absolute top-full mt-1 ml-1 bg-white text-black shadow-lg rounded-md w-[8rem] z-50 border border-gray-300">
+
+                    <label className="flex px-4 py-2 cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      checked={checked1}
+                      onChange={() => setChecked1(!checked1)}
+                      className=" cursor-pointer"
+                    />
+                      <span className="text-black px-2">Grid</span>
+                    </label>
+                    
+                    
+                    <label className="flex px-4 py-2 cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      checked={checked2}
+                      onChange={() => setChecked2(!checked2)}
+                      className="cursor-pointer"
+                    />
+                    <span className="text-black px-2">Lock</span>
+                  </label>
+                    </div>
+                    )}
+                </div>
+                      
+              </div>
             )}
 
              {/* Content Area */}
@@ -382,8 +718,21 @@ function Dropdown({ label, items }) {
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="relative h-full ">
+    <div className="relative h-full " ref={dropdownRef} >
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
