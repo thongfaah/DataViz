@@ -18,12 +18,10 @@ export default function Toolbar ({ onAddText }) {
   };
 
   const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 0.1, 2)); // จำกัดการซูมสูงสุดที่ 2x
     setZoomLevel((prev) => Math.min(prev + 0.1, 2)); // เพิ่มซูมสูงสุดที่ 200%
   };
   
   const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.1, 0.5)); // จำกัดการซูมต่ำสุดที่ 0.5x
     setZoomLevel((prev) => Math.max(prev - 0.1, 0.1)); // ลดซูมต่ำสุดที่ 10%
   };
 
@@ -42,21 +40,9 @@ export default function Toolbar ({ onAddText }) {
             <div className=" ml-[5.5rem]">
             {/* Toolbar */}
             <div className=" flex items-center bg-[#E3E3E3] h-[2rem]  z-50 ">
-                <Dropdown
               <Dropdown
                 label="File"
                 items={["New Report", "Open", "Save",{ label: "Export", subItems: ["PDF", "Excel", "CSV", "JPEG"] }]}
-                />
-                <button 
-                onClick={() => setActivePanel(activePanel === "edit" ? null : "edit")}
-                className=" px-4 text-[#2B3A67] h-full  hover:bg-gray-300 focus:border-b-[0.15rem] focus:border-[#2B3A67] focus:font-semibold"
-                >
-                    Edit
-                </button>
-
-                <button 
-                onClick={() => setActivePanel(activePanel === "insert" ? null : "insert")}
-                className="px-4 text-[#2B3A67] h-full  hover:bg-gray-300 focus:border-b-[0.15rem] focus:border-[#2B3A67] focus:font-semibold"
               />
 
               {['edit', 'insert', 'arrange', 'view'].map((panel) => (
@@ -67,21 +53,6 @@ export default function Toolbar ({ onAddText }) {
                     activePanel === panel ? 'font-semibold border-[#2B3A67]' : 'border-transparent'
                   }`}
                 >
-                    Insert
-                </button>
-
-                <button 
-                onClick={() => setActivePanel(activePanel === "arrange" ? null : "arrange")}
-                className="px-4 text-[#2B3A67] h-full  hover:bg-gray-300 focus:border-b-[0.15rem] focus:border-[#2B3A67] focus:font-semibold"
-                >
-                    Arrange
-                </button>
-
-                <button 
-                onClick={() => setActivePanel(activePanel === "view" ? null : "view")}
-                className="px-4 text-[#2B3A67] h-full  hover:bg-gray-300 focus:border-b-[0.15rem] focus:border-[#2B3A67] focus:font-semibold"
-                >
-                    View
                   {panel.charAt(0).toUpperCase() + panel.slice(1)}
                 </button>
               ))}
@@ -348,7 +319,6 @@ export default function Toolbar ({ onAddText }) {
                 </div>
             )}
 
-            {/* View Panel */}
             {/* Arrange */}
             {activePanel === "arrange" && (
                 <div className="relative bg-[#F5F5F5]  h-[2.5rem] flex ">
@@ -561,10 +531,6 @@ export default function Toolbar ({ onAddText }) {
 
             {/* View */}
             {activePanel === "view" && (
-                <div className="bg-gray-200 p-2 shadow-md flex space-x-2">
-                <button className="px-4 py-2 bg-gray-500 text-white rounded-md">Zoom In</button>
-                <button className="px-4 py-2 bg-gray-500 text-white rounded-md">Zoom Out</button>
-                <button className="px-4 py-2 bg-gray-500 text-white rounded-md">Fullscreen</button>
                 <div className="relative bg-[#F5F5F5]  h-[2.5rem] flex ">
 
                     {/* fit all */}
@@ -731,10 +697,8 @@ function Dropdown({ label, items }) {
   }, []);
 
   return (
-    <div className="relative h-full ">
     <div className="relative h-full " ref={dropdownRef} >
       <button
-        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="px-5 text-[#2B3A67] h-full hover:bg-gray-300 "
       >
