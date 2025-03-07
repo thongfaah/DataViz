@@ -136,7 +136,7 @@ import { useRouter } from 'next/navigation'
                             key={index}
                             onClick={() => {
                                 handleClick(index);
-                                router.push("/Toolbar");
+                                router.push("/Dashboard");
                             }}
                             
                             className={`flex flex-col items-center justify-center w-full h-20 relative z-10 text-[#2B3A67] text-xs ${

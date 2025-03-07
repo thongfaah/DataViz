@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from "../Sidebar/page";
 import DashNav from '../dash-nav/page';
 import Toolbar from '../Toolbar/page';
+import SelectColumnsPage from '../select-columns/page';
 import Link from 'next/link'
 
 // TextBox Component
@@ -94,7 +95,12 @@ const App = () => {
       
       <div className="ml-40 pt-[9rem]">
         <Toolbar onAddText={addTextBox} />
-        <div className="relative w-full h-[500px]mt-4">
+
+        <div className="absolute ">
+          <SelectColumnsPage />
+        </div>
+
+        <div className="relative w-full h-[500px] mt-4">
           {elements.map((el, index) =>
             el.type === 'text' ? (
               <TextBox
