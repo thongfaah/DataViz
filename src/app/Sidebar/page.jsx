@@ -136,7 +136,6 @@ import { useRouter } from 'next/navigation'
                             key={index}
                             onClick={() => {
                                 handleClick(index);
-                                router.push("/Toolbar");
                                 router.push("/Dashboard");
                             }}
                             
