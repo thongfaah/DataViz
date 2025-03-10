@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../../lib/mongodb";
-import Papa from "papaparse";
 import File from "../../../../models/File";
 
 export async function POST(req) {
@@ -9,26 +8,51 @@ export async function POST(req) {
 
     const formData = await req.formData();
     const file = formData.get("file");
-    const fileName = formData.get("fileName"); // 📌 รับชื่อไฟล์จาก formData
+    const fileName = formData.get("fileName");
 
     if (!file || !fileName) {
       return NextResponse.json({ error: "No file or filename provided" }, { status: 400 });
     }
 
     const fileText = await file.text();
-    const parsedData = Papa.parse(fileText, { header: true, skipEmptyLines: true });
 
-    if (!parsedData.data || parsedData.data.length === 0) {
-      return NextResponse.json({ error: "CSV file is empty" }, { status: 400 });
+    // ตรวจสอบว่าเป็น .csv หรือ .txt
+    const isCSV = fileName.toLowerCase().endsWith(".csv");
+    const isTXT = fileName.toLowerCase().endsWith(".txt");
+
+    if (!isCSV && !isTXT) {
+      return NextResponse.json({ error: "Invalid file format. Only CSV and TXT are allowed." }, { status: 400 });
     }
 
-    const columns = parsedData.meta.fields || [];
-    const rows = parsedData.data;
+    let columns = [];
+    let rows = [];
+
+    const lines = fileText.trim().split("\n"); // แยกแต่ละบรรทัด
+    if (lines.length > 1) {
+      // 🔥 รองรับทั้ง space และ comma
+      const detectDelimiter = (line) => (line.includes(",") ? "," : /\s+/);
+      
+      // ใช้บรรทัดแรกเพื่อกำหนด delimiter (สมมติว่าทั้งไฟล์ใช้ delimiter เดียวกัน)
+      const delimiter = detectDelimiter(lines[0]);
+      columns = lines[0].trim().split(delimiter); 
+
+      rows = lines.slice(1).map((line) => {
+        const values = line.trim().split(delimiter); // แยกข้อมูลตาม delimiter
+        return columns.reduce((obj, col, index) => {
+          obj[col] = values[index] || ""; // ใส่ค่าให้แต่ละคอลัมน์
+          return obj;
+        }, {});
+      });
+    }
+
+    if (columns.length === 0 || rows.length === 0) {
+      return NextResponse.json({ error: "File is empty or improperly formatted" }, { status: 400 });
+    }
 
     const newFile = new File({
-      table_name: fileName, // ✅ ใช้ชื่อไฟล์เป็น table_name
-      columns: columns, // ✅ เก็บคอลัมน์ทั้งหมด
-      rows: rows, // ✅ เก็บข้อมูลในรูปแบบ Array of Objects
+      table_name: fileName,
+      columns: columns,
+      rows: rows,
     });
 
     await newFile.save();
@@ -39,4 +63,3 @@ export async function POST(req) {
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
   }
 }
-

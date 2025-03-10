@@ -90,7 +90,7 @@ const Create = () => {
             Import Data
           </h1>
           <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <label htmlFor="file-upload">
+            <label htmlFor="file-uploadCSV">
               <img
                 src="/createCSV.png"
                 alt="CreateCSV"
@@ -99,10 +99,28 @@ const Create = () => {
               />
             </label>
             <input
-              id="file-upload"
+              id="file-uploadCSV"
               type="file"
               className="hidden"
               accept=".csv" 
+              onChange={handleFileChange}
+            />
+            {loading && <p className="text-red-500 mt-4">Uploading...</p>}
+          </div>
+          <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <label htmlFor="file-uploadtxt">
+              <img
+                src="/createtxt.png"
+                alt="Createtxt"
+                style={{ width: "290px", height: "auto" }}
+                className="absolute top-28 left-1/4 max-w-full max-h-full object-contain"
+              />
+            </label>
+            <input
+              id="file-uploadtxt"
+              type="file"
+              className="hidden"
+              accept=".txt" 
               onChange={handleFileChange}
             />
             {loading && <p className="text-red-500 mt-4">Uploading...</p>}
