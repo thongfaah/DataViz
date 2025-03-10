@@ -96,10 +96,10 @@ const App = () => {
       
       <div className="ml-40 pt-[9rem]">
         <Toolbar onAddText={addTextBox} />
+
         <div className="absolute ">
-              <Test />
-            </div>
-        
+          <Test />
+        </div>
 
         <div className="relative ">
           {elements.map((el, index) =>
