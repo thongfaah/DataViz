@@ -645,11 +645,11 @@ export default function Toolbar ({ onAddText }) {
             )}
 
              {/* Content Area */}
-             <div className=" fixed w-full h-[35.1rem] p-4 border-gray-300 border-2 bg-white"></div>
+             <div className="fixed w-full  h-full p-4 border-gray-300 border-l-2 bg-white z-0"></div>
             
              {/* page */}
              <div className="fixed bottom-5 flex-1 flex flex-col ">
-              <div className="bg-white flex h-[2.5rem] items-center ">
+              <div className="bg-white flex h-[2.5rem] items-center">
                 <div className="px-4 py-2 bg-white text-[#2B3A67] border-t-[0.1rem] border-l-[0.1rem] border-[#2B3A67] ">page 1</div>
                 <button className="px-4 py-2 bg-[#1E2A4A] border-[#2B3A67] border-t-[0.12rem] text-white ">+</button>
               </div>
@@ -689,7 +689,6 @@ function Dropdown({ label, items }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
   const dropdownRef = useRef(null);
-  const buttonRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
