@@ -7,6 +7,7 @@ import Papa from "papaparse";
 import TablePage from "../tablepage/page"; // Import TablePage
 import { Rnd } from "react-rnd"; // Import Rnd
 
+
 const Create = () => {
   const centerPosition = () => ({
     x: (window.innerWidth - size.width) / 2,
@@ -21,6 +22,9 @@ const Create = () => {
   const router = useRouter();
   const handleUploadClick = () => {
     router.push('/Dashboard'); // เปลี่ยนเส้นทางไปยังหน้าที่ต้องการ
+  };
+  const handleProcessingClick = () => {
+    router.push('/DataProcessing'); // เปลี่ยนเส้นทางไปยังหน้าที่ต้องการ
   };
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
@@ -152,7 +156,7 @@ const Create = () => {
                 <button onClick={handleUploadClick} className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
                   Upload
                 </button>
-                <button className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
+                <button onClick={handleProcessingClick} className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
                   Processing Data
                 </button>
                 <button className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
