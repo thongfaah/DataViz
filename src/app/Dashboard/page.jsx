@@ -101,7 +101,7 @@ const App = () => {
           <Test />
         </div>
 
-        <div className="relative w-full h-[500px] mt-4">
+        <div className="relative ">
           {elements.map((el, index) =>
             el.type === 'text' ? (
               <TextBox
