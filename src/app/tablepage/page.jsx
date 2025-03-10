@@ -1,10 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
-const TablePage = () => {
-  const searchParams = useSearchParams();
-  const fileName = searchParams.get("file"); // 📌 รับชื่อไฟล์จาก URL
+const TablePage = ({ fileName }) => {
   const [data, setData] = useState({ columns: [], rows: [] });
   const [loading, setLoading] = useState(true);
 
@@ -34,29 +31,31 @@ const TablePage = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-[#2B3A67] mb-4">📊 ตารางข้อมูล: {fileName}</h1>
+      <h1 className="text-2xl  text-[#2B3A67] mb-4">{fileName}</h1>
 
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-gray-200">
-              {data.columns.map((col, index) => (
-                <th key={index} className="border border-gray-300 p-2">{col}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="hover:bg-gray-100">
-                {data.columns.map((col, colIndex) => (
-                  <td key={colIndex} className="border border-gray-300 p-2">{row[col] || "-"}</td>
+        <div className="overflow-auto max-h-full"> {/* เพิ่ม div ครอบตาราง */}
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-200">
+                {data.columns.map((col, index) => (
+                  <th key={index} className="border border-gray-300 p-2">{col}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.rows.map((row, rowIndex) => (
+                <tr key={rowIndex} className="hover:bg-gray-100">
+                  {data.columns.map((col, colIndex) => (
+                    <td key={colIndex} className="border border-gray-300 p-2">{row[col] || "-"}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
