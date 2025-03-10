@@ -37,7 +37,7 @@ export default function Toolbar ({ onAddText }) {
         <div>
             <Sidebar />
 
-            <div className=" ml-[5.5rem]">
+            <div className=" ml-[5.5rem] ">
             {/* Toolbar */}
             <div className=" flex items-center bg-[#E3E3E3] h-[2rem] ">
               <Dropdown

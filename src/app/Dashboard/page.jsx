@@ -96,11 +96,11 @@ const App = () => {
       <div className="ml-40 pt-[9rem]">
         <Toolbar onAddText={addTextBox} />
 
-        <div className="absolute ">
+        <div className="absolute bg-gray-50 border-black border-2">
           <SelectColumnsPage />
         </div>
 
-        <div className="relative w-full h-[500px] mt-4">
+        <div className="relative">
           {elements.map((el, index) =>
             el.type === 'text' ? (
               <TextBox
