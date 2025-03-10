@@ -6,6 +6,7 @@ import DashNav from '../dash-nav/page';
 import Toolbar from '../Toolbar/page';
 import SelectColumnsPage from '../select-columns/page';
 import Link from 'next/link'
+import Test from '../Test/page';
 
 // TextBox Component
 const TextBox = ({ text, onChange, style, onDrag }) => {
@@ -97,10 +98,10 @@ const App = () => {
         <Toolbar onAddText={addTextBox} />
 
         <div className="absolute ">
-          <SelectColumnsPage />
+          <Test />
         </div>
 
-        <div className="relative w-full h-[500px] mt-4">
+        <div className="relative ">
           {elements.map((el, index) =>
             el.type === 'text' ? (
               <TextBox
