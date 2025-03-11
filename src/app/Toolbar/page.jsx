@@ -8,12 +8,13 @@ import DataViz from "../DataViz/page";
 
 
 export default function Toolbar ({ onAddText }) {
-  const [activePanel, setActivePanel] = useState(null);
+  const [activePanel, setActivePanel] = useState("edit");
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [checked1, setChecked1] = useState(false);
   const [checked2, setChecked2] = useState(false);
-
+  const [pages, setPages] = useState([[]]); // เก็บข้อมูลของแต่ละหน้า
+  const [currentPage, setCurrentPage] = useState(0);
 
   const toggleDropdown = (dropdownId) => {
     setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
@@ -29,6 +30,12 @@ export default function Toolbar ({ onAddText }) {
 
   const handleSelectChange = (e) => {
     setZoomLevel(parseFloat(e.target.value));
+  };
+
+  // เพิ่มหน้ากระดาษใหม่
+  const addPage = () => {
+    setPages([...pages, []]);
+    setCurrentPage(pages.length);
   };
 
 
@@ -348,7 +355,7 @@ export default function Toolbar ({ onAddText }) {
                 </button>
                 
                 {isDropdownOpen === "Bring froward" && (
-                    <ul className="absolute top-full mt-1 ml-1 bg-white text-black shadow-lg rounded-md w-45 z-50 border border-gray-300">
+                    <ul className="absolute top-full mt-1 ml-1 bg-white text-black shadow-lg rounded-md w-45 z-50 border border-gray-300 ">
             
                         <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
                             <img 
@@ -650,8 +657,21 @@ export default function Toolbar ({ onAddText }) {
              {/* page */}
              <div className="fixed bottom-5 flex-1 flex flex-col ">
               <div className="bg-white flex h-[2.5rem] items-center">
-                <div className="px-4 py-2 bg-white text-[#2B3A67] border-t-[0.1rem] border-l-[0.1rem] border-[#2B3A67] ">page 1</div>
-                <button className="px-4 py-2 bg-[#1E2A4A] border-[#2B3A67] border-t-[0.12rem] text-white ">+</button>
+            
+                  {pages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentPage(index)}
+                      className={ `px-4 py-2 border-r  border-t-[0.1rem] border-l-[0.1rem] border-[#2B3A67] ${index === currentPage ? "bg-[#2B3A67] text-white" : "bg-white text-[#2B3A67]"}`}
+                    >
+                      Page {index + 1}
+                    </button> 
+                  ))}
+
+                  <button className="px-4 py-2 bg-[#1E2A4A] border-[#2B3A67] border-t-[0.12rem] text-white " onClick={addPage}>
+                    + 
+                  </button>
+                  
               </div>
             </div>
         </div>
