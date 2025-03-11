@@ -678,9 +678,9 @@ export default function Toolbar ({ onAddText }) {
 
              {/* Status bar */}
              <div className="fixed bottom-0 w-full flex justify-between items-center bg-[#E3E3E3] h-[1.25rem] px-4 text-sm self-start z-50">
-                    {/* Page Section */}
+                    {/* Page Info */}
                     <div className="flex items-center space-x-2">
-                      <span className="text-black text-sm">page 1 from 1</span>
+                      <span className="text-black text-sm">page {currentPage + 1} from {pages.length}</span>
                     </div>
 
                     {/* Zoom Section */}
