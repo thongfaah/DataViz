@@ -26,7 +26,7 @@ function Nav1() {
   );
 
 return (
-    <Navbar expand="lg"  className="bg-white py-3 mb-2 lg:h-18">
+    <Navbar expand="lg"  className="bg-white py-3 mb-2 lg:h-18 z-20">
             <Container className="flex justify-content-between align-items-center">
               <Navbar.Brand href="/Homepage" className="text-[#2B3A67] text-4xl font-bold px-3 mt-2">ClarityViz</Navbar.Brand>  
             
@@ -105,7 +105,7 @@ return (
 
                 {/* Dropdown Menu */}
                 {open && (
-                  <div className="absolute right-0 mt-3 w-56 bg-[#E3E3E3] shadow-lg rounded-lg p-3 z-50">
+                  <div className="fixed  right-0 mt-3 w-56 bg-[#E3E3E3] shadow-lg rounded-lg p-3 z-50">
                     <h3 className="text-sm font-semibold text-black mb-2">Profile</h3>
 
                     <div className="flex items-center gap-3 mb-4">
