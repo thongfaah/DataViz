@@ -8,6 +8,7 @@ import EditPanel from '../EditPanel/page';
 import InsertPanel from '../InsertPanel/page';
 import ArrangePanel from '../ArrangePanel/page';
 import ViewPanel from '../ViewPanel/page';
+import NewTableManager from '../์NewTableManager/page';
 import SelectColumnsPage from '../select-columns/page';
 import Link from 'next/link'
 import Test from '../Test/page';
@@ -27,6 +28,12 @@ import Test from '../Test/page';
 
 const App = () => {
   const [activePanel, setActivePanel] = useState("edit");
+  const [tables, setTables] = useState([]); // State เก็บกล่องที่เพิ่ม
+
+  // ฟังก์ชันเพิ่มกล่องใหม่
+  const addTable = () => {
+    setTables([...tables, { id: Date.now() }]);
+  };
 //   const [elements, setElements] = useState([]);
 //   const [draggedElement, setDraggedElement] = useState(null);
 
@@ -129,12 +136,21 @@ const App = () => {
       <div className="absolute left-[10rem] top-[10rem]">
           <Test />
       </div>
+      
 
-      {/* Active Panels */}
-      {activePanel === "edit" && <EditPanel />}
+      {/* Active Panels */} 
+     
+      {activePanel === "edit" && <EditPanel addTable={addTable} />}
       {activePanel === "insert" && <InsertPanel />}
       {activePanel === "arrange" && <ArrangePanel />}
       {activePanel === "view" && <ViewPanel />}
+
+      <div className="grid gap-4 p-4">
+        {tables.map((table) => (
+          <NewTableManager key={table.id} />
+        ))}
+      </div>
+      
     </div>
 
   );
