@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, PieChart, Pie } from "recharts";
 import Moveable from "react-moveable";
 
 const Test = () => {
@@ -63,6 +63,22 @@ const Test = () => {
     });
   };
 
+  const generateRandomColor = () => {
+    return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}`;
+  };
+
+  const pieData = useMemo(() => {
+    if (!selectedFile || !data[selectedFile]?.rows || selectedColumns[selectedFile]?.length !== 2) {
+      return [];
+    }
+  
+    return data[selectedFile].rows.map(row => ({
+      name: row[selectedColumns[selectedFile][0]] || "",
+      value: Number(row[selectedColumns[selectedFile][1]]) || 0,
+      fill: generateRandomColor() // ใช้ฟังก์ชันสุ่มสี
+    }));
+  }, [selectedFile, data, selectedColumns]);
+
   const generateColors = useMemo(() => {
     const colors = {};
     return (col) => {
@@ -72,6 +88,8 @@ const Test = () => {
       return colors[col];
     };
   }, []);
+
+  
 
   const chartData = selectedFile && data[selectedFile]?.rows
     ? data[selectedFile].rows.map((row) => {
@@ -83,7 +101,14 @@ const Test = () => {
       })
     : [];
 
-  
+    // const pieData = selectedFile && data[selectedFile]?.rows
+    // ? selectedColumns[selectedFile]?.length === 2
+    //   ? data[selectedFile].rows.map(row => ({
+    //       name: row[selectedColumns[selectedFile][0]] || "",
+    //       value: Number(row[selectedColumns[selectedFile][1]]) || 0
+    //     }))
+    //   : []
+    // : [];
 
     useEffect(() => {
       if (targetRef.current) {
@@ -92,30 +117,13 @@ const Test = () => {
       }
     }, [width, height]);
 
+
   return (
 
 
 
     <div className=" flex ">
-      {/* <div className="flex-1 p-8 border border-gray-300 w-auto">
-        <div className="mb-4 flex gap-4">
-          <button
-            className={`p-2 border rounded ${viewMode === "table" ? "bg-blue-500 text-white" : ""}`}
-            onClick={() => setViewMode("table")}
-          >
-            แสดงเป็นตาราง
-          </button>
-          <button
-            className={`p-2 border rounded ${viewMode === "chart" ? "bg-blue-500 text-white" : ""}`}
-            onClick={() => setViewMode("chart")}
-          >
-            กราฟแท่ง
-          </button>
-        </div> */}
-
-  
-
-
+    
       <div
         ref={targetRef}
         className="absolute overflow-hidden"
@@ -135,9 +143,16 @@ const Test = () => {
             >
               กราฟแท่ง
             </button>
+
+            <button
+            className={`p-2 border rounded ${viewMode === "pie" ? "bg-blue-500 text-white" : ""}`}
+            onClick={() => setViewMode("pie")}
+            >
+              แผนภูมิวงกลม
+            </button>
           </div>
       
-        {loading ? (
+        {/* {loading ? (
           <p>Loading...</p>
         ) : selectedFile ? (
           viewMode === "table" ? (
@@ -175,6 +190,71 @@ const Test = () => {
             </ResponsiveContainer>
             </div>
             
+          )
+        ) : (
+          <p>เริ่มสร้างภาพด้วยข้อมูลของคุณ</p>
+        )} */}
+
+        {loading ? (
+          <p>Loading...</p>
+        ) : selectedFile ? (
+          viewMode === "table" ? (
+            <table className="w-full border-collapse border border-gray-300 text-sm table-fixed">
+              <thead>
+                <tr className="bg-gray-200">
+                  {selectedColumns[selectedFile]?.map((col, index) => (
+                    <th key={index} className="border border-gray-300 p-2">{col}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data[selectedFile]?.rows.map((row, rowIndex) => (
+                  <tr key={rowIndex} className="hover:bg-gray-100">
+                    {selectedColumns[selectedFile]?.map((col, colIndex) => (
+                      <td key={colIndex} className="border border-gray-300 p-2">{row[col] || "-"}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) :  viewMode === "pie" ? (
+            pieData.length > 0 ? (
+              <div className="flex justify-center items-center">
+              <ResponsiveContainer width={width} height={height - 100}>
+                <PieChart>
+                  <Tooltip />
+                  <Legend />
+                  <Pie
+                    data={pieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={120}
+                    fill="#8884d8"
+                    label
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              </div>
+            ) : (
+              <p>กรุณาเลือก 2 คอลัมน์ (1 Label + 1 Value) สำหรับแผนภูมิวงกลม</p>
+            ) 
+            ) : (
+              <div className="flex justify-center items-center">
+            <ResponsiveContainer width={width} height={height - 100}>
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {selectedColumns[selectedFile]?.slice(1).map((col, index) => (
+                  <Bar key={index} dataKey={col} fill={generateColors(col)} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+            </div>
           )
         ) : (
           <p>เริ่มสร้างภาพด้วยข้อมูลของคุณ</p>

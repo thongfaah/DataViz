@@ -108,7 +108,7 @@ const EditPanel = ({ addTable }) => {
 
                     {/* New table */}
                    
-                    <button 
+                    {/* <button 
                         onClick={addTable}
                         className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
                     <img 
@@ -116,17 +116,17 @@ const EditPanel = ({ addTable }) => {
                         className=" px-2 max-h-full object-contain "
                      />
                     new table
-                </button>
+                </button> */}
                 
 
                 {/* text */}
-                <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
+                {/* <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
                     <img 
                         src="/text.png" alt="text" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "
                      />
                     Text
-                </button> 
+                </button>  */}
 
                 {/* Fillter */}
                 <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">

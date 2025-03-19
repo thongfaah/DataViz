@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DataViz from "../DataViz/page";
 
-const InsertPanel = () => {
+const InsertPanel = ({ addTable }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const toggleDropdown = (dropdownId) => {
         setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
@@ -20,7 +20,10 @@ const InsertPanel = () => {
      </button>
 
        {/* New table */}
-      <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center text-sm  border-r-2 ">
+      <button  
+      onClick={addTable}
+      className="flex px-2 h-full hover:bg-[#E3E3E3] items-center text-sm  border-r-2 "
+      >     
         <svg className="px-2" width="39" height="37" viewBox="0 0 31 37" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path opacity="0.25" d="M9.42281 35.4372H4.25614C3.91357 35.4372 3.58503 35.2747 3.3428 34.9856C3.10056 34.6965 2.96448 34.3044 
           2.96448 33.8955V21.5622C2.96448 21.1533 3.10056 20.7612 3.3428 20.4721C3.58503 20.1829 3.91357 20.0205 4.25614 20.0205H9.42281C9.76538 

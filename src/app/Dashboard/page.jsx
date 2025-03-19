@@ -140,8 +140,8 @@ const App = () => {
 
       {/* Active Panels */} 
      
-      {activePanel === "edit" && <EditPanel addTable={addTable} />}
-      {activePanel === "insert" && <InsertPanel />}
+      {activePanel === "edit" && <EditPanel />}
+      {activePanel === "insert" && <InsertPanel addTable={addTable}/>}
       {activePanel === "arrange" && <ArrangePanel />}
       {activePanel === "view" && <ViewPanel />}
 

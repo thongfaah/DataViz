@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import DashNav from "../dash-nav/page";
 import Sidebar from "../Sidebar/page";
 import DataViz from "../DataViz/page";
+import { createPortal } from "react-dom";
 
 const Toolbar = ({ activePanel, setActivePanel }) => {
   const [pages, setPages] = useState([[]]); // เก็บข้อมูลของแต่ละหน้า
@@ -109,36 +110,45 @@ const Toolbar = ({ activePanel, setActivePanel }) => {
 
 export default Toolbar;
 
+
 function Dropdown({ label, items }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [hoveredItem, setHoveredItem] = useState(null);
-    const dropdownRef = useRef(null);
-  
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-          setIsOpen(false);
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, []);
-  
-    return (
-      <div className="relative h-full " ref={dropdownRef} >
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="px-5 text-[#2B3A67] h-full hover:bg-gray-300 "
-        >
-          {label}
-        </button>
-  
-        {isOpen && (
+  const [isOpen, setIsOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative h-full" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-5 text-[#2B3A67] h-full hover:bg-gray-300"
+      >
+        {label}
+      </button>
+
+      {isOpen &&
+        createPortal(
           <ul
-            ref={dropdownRef}
-            className="absolute top-full mt-1 left-0 bg-white text-black shadow-lg rounded-md w-40  z-50 border border-gray-300"
+            className="absolute top-full mt-1 left-0 bg-white text-black shadow-lg rounded-md w-40 z-[9999] border border-gray-300"
+            style={{
+              position: "absolute",
+              left: dropdownRef.current?.getBoundingClientRect().left + "px",
+              top:
+                dropdownRef.current?.getBoundingClientRect().bottom +
+                window.scrollY +
+                "px",
+            }}
           >
             {items.map((item, index) => (
               <li
@@ -148,10 +158,10 @@ function Dropdown({ label, items }) {
                 onMouseLeave={() => setHoveredItem(null)}
               >
                 {typeof item === "string" ? item : item.label}
-  
+
                 {/* Submenu */}
                 {item.subItems && hoveredItem === index && (
-                  <ul className="absolute left-full top-0 bg-white text-black shadow-lg rounded-md w-40  z-50 border border-gray-300">
+                  <ul className="absolute left-full top-0 bg-white text-black shadow-lg rounded-md w-40 z-[9999] border border-gray-300">
                     {item.subItems.map((subItem, subIndex) => (
                       <li key={subIndex} className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
                         {subItem}
@@ -161,10 +171,11 @@ function Dropdown({ label, items }) {
                 )}
               </li>
             ))}
-          </ul>
+          </ul>,
+          document.body
         )}
-      </div>
-      
-    );
-  }
-  
+    </div>
+  );
+};
+
+
