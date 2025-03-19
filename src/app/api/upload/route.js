@@ -1,60 +1,54 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../../lib/mongodb";
 import File from "../../../../models/File";
+import Papa from "papaparse";
 
 export async function POST(req) {
   try {
     await connectMongoDB();
+    const { fileName, fileContent, delimiter } = await req.json();
 
-    const formData = await req.formData();
-    const file = formData.get("file");
-    const fileName = formData.get("fileName");
-
-    if (!file || !fileName) {
-      return NextResponse.json({ error: "No file or filename provided" }, { status: 400 });
+    if (!fileContent || !fileName) {
+      return NextResponse.json({ error: "No file content or filename provided" }, { status: 400 });
     }
 
-    const fileText = await file.text();
-
-    // ตรวจสอบว่าเป็น .csv หรือ .txt
-    const isCSV = fileName.toLowerCase().endsWith(".csv");
-    const isTXT = fileName.toLowerCase().endsWith(".txt");
-
-    if (!isCSV && !isTXT) {
-      return NextResponse.json({ error: "Invalid file format. Only CSV and TXT are allowed." }, { status: 400 });
+    // ✅ กำหนด delimiter ตามประเภทไฟล์
+    let fileDelimiter = delimiter?.trim();
+    if (!fileDelimiter) {
+      fileDelimiter = fileName.endsWith(".txt") ? "\t" : ","; // TXT ใช้ tab เป็นค่าเริ่มต้น
+    } else if (fileDelimiter === "space") {
+      fileDelimiter = " "; // ถ้าเป็น space ต้องกำหนดให้เป็น " "
     }
 
-    let columns = [];
-    let rows = [];
-
-    const lines = fileText.trim().split("\n"); // แยกแต่ละบรรทัด
-    if (lines.length > 1) {
-      // 🔥 รองรับทั้ง space และ comma
-      const detectDelimiter = (line) => (line.includes(",") ? "," : /\s+/);
-      
-      // ใช้บรรทัดแรกเพื่อกำหนด delimiter (สมมติว่าทั้งไฟล์ใช้ delimiter เดียวกัน)
-      const delimiter = detectDelimiter(lines[0]);
-      columns = lines[0].trim().split(delimiter); 
-
-      rows = lines.slice(1).map((line) => {
-        const values = line.trim().split(delimiter); // แยกข้อมูลตาม delimiter
-        return columns.reduce((obj, col, index) => {
-          obj[col] = values[index] || ""; // ใส่ค่าให้แต่ละคอลัมน์
-          return obj;
-        }, {});
-      });
-    }
-
-    if (columns.length === 0 || rows.length === 0) {
-      return NextResponse.json({ error: "File is empty or improperly formatted" }, { status: 400 });
-    }
-
-    const newFile = new File({
-      table_name: fileName,
-      columns: columns,
-      rows: rows,
+    // ✅ ใช้ PapaParse ให้รองรับ delimiter ที่กำหนด
+    const parsedData = Papa.parse(fileContent, {
+      delimiter: fileDelimiter,
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: true,
     });
 
+    if (parsedData.errors.length > 0) {
+      console.error("CSV Parsing Error:", parsedData.errors);
+      return NextResponse.json({ error: "CSV Parsing Error", details: parsedData.errors }, { status: 400 });
+    }
+
+    // ✅ ตรวจสอบและสร้าง column header หากไม่มี
+    let columns = parsedData.meta.fields || [];
+    if (!columns.length && parsedData.data.length > 0) {
+      columns = Object.keys(parsedData.data[0]);
+    }
+
+    // ✅ เติมค่า "" หาก column ไม่ครบ
+    const rows = parsedData.data.map(row => {
+      return columns.reduce((obj, col) => {
+        obj[col] = row[col] !== undefined ? row[col] : "";
+        return obj;
+      }, {});
+    });
+
+    // ✅ บันทึกลง MongoDB
+    const newFile = new File({ table_name: fileName, columns, rows });
     await newFile.save();
 
     return NextResponse.json({ message: "File uploaded successfully", fileId: newFile._id });

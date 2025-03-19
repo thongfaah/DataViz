@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, PieChart, Pie } from "recharts";
 
 const Test = () => {
   const [files, setFiles] = useState([]);
@@ -65,6 +65,16 @@ const Test = () => {
       })
     : [];
 
+    const pieData = selectedFile && data[selectedFile]?.rows
+    ? selectedColumns[selectedFile]?.length === 2
+      ? data[selectedFile].rows.map(row => ({
+          name: row[selectedColumns[selectedFile][0]] || "",
+          value: Number(row[selectedColumns[selectedFile][1]]) || 0
+        }))
+      : []
+    : [];
+  
+
   return (
     <div className="flex">
       <div className="flex-1 p-8 border border-gray-300 w-auto">
@@ -82,6 +92,13 @@ const Test = () => {
             กราฟแท่ง
           </button>
         </div>
+        <button
+  className={`p-2 border rounded ${viewMode === "pie" ? "bg-blue-500 text-white" : ""}`}
+  onClick={() => setViewMode("pie")}
+>
+  แผนภูมิวงกลม
+</button>
+
 
         {loading ? (
           <p>Loading...</p>
@@ -105,7 +122,28 @@ const Test = () => {
                 ))}
               </tbody>
             </table>
-          ) : (
+          ) :  viewMode === "pie" ? (
+            pieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={400}>
+                <PieChart>
+                  <Tooltip />
+                  <Legend />
+                  <Pie
+                    data={pieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={120}
+                    fill="#8884d8"
+                    label
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p>กรุณาเลือก 2 คอลัมน์ (1 Label + 1 Value) สำหรับแผนภูมิวงกลม</p>
+            ) 
+            ) : (
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
