@@ -1,11 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect} from "react";
 import DataViz from "../DataViz/page";
+import { Table } from "lucide-react";
+import TableView from "../TableView/page";
+import PieChartView from "../Piechart/page";
+import BarChartView from "../Barchart/page";
+import Test from "../Test/page";
 
-const InsertPanel = () => {
+const InsertPanel = ({ addTable, addTextBox  }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const toggleDropdown = (dropdownId) => {
         setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
     };
+
+    const [viewMode, setViewMode] = useState("table");
+    const fileInputRef = useRef(null);
+    const canvasRef = useRef(null);
+    const [imageFile, setImageFile] = useState(null);
+    const handleButtonClick = () => {
+      fileInputRef.current.click(); // trigger file input click
+    };
+
+    const handleFileChange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        console.log("Uploaded file:", file);
+        // คุณสามารถเอาไปแสดง preview หรือส่งไปยัง backend ได้ที่นี่
+      }
+    };
+
+
+    useEffect(() => {
+      if (imageFile && canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        const reader = new FileReader();
+  
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            canvasRef.current.width = img.width;
+            canvasRef.current.height = img.height;
+            ctx.clearRect(0, 0, img.width, img.height);
+            ctx.drawImage(img, 0, 0);
+          };
+          img.src = e.target.result;
+        };
+  
+        reader.readAsDataURL(imageFile);
+      }
+    }, [imageFile]);
 
     return (
     
@@ -20,7 +62,10 @@ const InsertPanel = () => {
      </button>
 
        {/* New table */}
-      <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center text-sm  border-r-2 ">
+      <button  
+      onClick={addTable}
+      className="flex px-2 h-full hover:bg-[#E3E3E3] items-center text-sm  border-r-2 "
+      >     
         <svg className="px-2" width="39" height="37" viewBox="0 0 31 37" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path opacity="0.25" d="M9.42281 35.4372H4.25614C3.91357 35.4372 3.58503 35.2747 3.3428 34.9856C3.10056 34.6965 2.96448 34.3044 
           2.96448 33.8955V21.5622C2.96448 21.1533 3.10056 20.7612 3.3428 20.4721C3.58503 20.1829 3.91357 20.0205 4.25614 20.0205H9.42281C9.76538 
@@ -33,7 +78,7 @@ const InsertPanel = () => {
       </button>
 
      {/* Text  onClick={onAddText} */}
-      <button  className="flex px-2 h-full hover:bg-[#E3E3E3] items-center"> 
+      <button  onClick={addTextBox}  className="flex px-2 h-full hover:bg-[#E3E3E3] items-center"> 
         <img 
              src="/text.png" alt="text" style={{ width: '38px', height: 'auto' }} 
              className=" px-2 max-h-full object-contain "
@@ -121,7 +166,17 @@ const InsertPanel = () => {
                 </div>
 
                 {/* Add Image */}
-                <button className="flex px-4 h-full hover:bg-[#E3E3E3] items-center border-r-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+                <button 
+                   onClick={handleButtonClick}
+                  className="flex px-4 h-full hover:bg-[#E3E3E3] items-center border-r-2"
+                >
                   <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M6.90625 22.75L17.2656 13L22.1406 17.875M6.90625 22.75H19.0938C21.113 22.75 22.75 21.113 22.75 19.0938V13M6.90625 
                     22.75C4.88696 22.75 3.25 21.113 3.25 19.0938V6.90625C3.25 4.88696 4.88696 3.25 6.90625 3.25H14.8281M22.75 6.86301L20.2574 
@@ -130,10 +185,35 @@ const InsertPanel = () => {
                     stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
-
+                
                 {/* graph */}
-                <DataViz />
+                <DataViz viewMode={viewMode} setViewMode={setViewMode}/>
+                {/* viewMode={viewMode} setViewMode={setViewMode} */}
+                <div>
+                  {viewMode === "table" }
+                  {viewMode === "chart"}
+                  {viewMode === "pie"  }
+                  {viewMode === "line" }
                 </div>
+
+                {/* {loading ? (
+                          <p>Loading...</p>
+                        ) : selectedFile ? (
+                          viewMode === "table" ? (
+                            <TableView selectedFile={selectedFile} selectedColumns={selectedColumns} data={data} />
+                          ) :  viewMode === "pie" ? (
+                            <PieChartView pieData={pieData} width={width} height={height} />
+                            ) :
+                              (
+                                <BarChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />
+                          )
+                        ) : null
+                        // (
+                        //   <p>เริ่มสร้างภาพด้วยข้อมูลของคุณ</p>
+                        // )
+                        } */}
+
+          </div>
         
     );
 };

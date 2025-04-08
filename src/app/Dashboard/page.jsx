@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import Sidebar from "../Sidebar/page";
 import DashNav from '../dash-nav/page';
 import Toolbar from '../Toolbar/page';
@@ -10,151 +10,108 @@ import ArrangePanel from '../ArrangePanel/page';
 import ViewPanel from '../ViewPanel/page';
 import NewTableManager from '../์NewTableManager/page';
 import SelectColumnsPage from '../select-columns/page';
-import Link from 'next/link'
+import Link from 'next/link';
 import Test from '../Test/page';
+import TextBox from '../TextManager/page';
 
-// TextBox Component
-// const TextBox = ({ text, onChange, style, onDrag }) => {
-//   return (
-//     <div className="absolute" style={style} onMouseDown={onDrag}>
-//       <textarea
-//         value={text}
-//         onChange={(e) => onChange(e.target.value)}
-//         className="bg-white border p-2 resize-none shadow-lg cursor-move"
-//       />
-//     </div>
-//   );
-// };
 
 const App = () => {
   const [activePanel, setActivePanel] = useState("edit");
-  const [tables, setTables] = useState([]); // State เก็บกล่องที่เพิ่ม
+  const [tables, setTables] = useState([]);
+  const [elements, setElements] = useState([]);
+  const [draggedElement, setDraggedElement] = useState(null);
+  const [viewMode, setViewMode] = useState("table");
 
-  // ฟังก์ชันเพิ่มกล่องใหม่
   const addTable = () => {
-    setTables([...tables, { id: Date.now() }]);
+    setTables([...tables, { id: Date.now() }]); // เพิ่มตารางใหม่โดยสร้าง id ที่ไม่ซ้ำ
   };
-//   const [elements, setElements] = useState([]);
-//   const [draggedElement, setDraggedElement] = useState(null);
 
-//   const addTextBox = () => {
-//     setElements((prev) => [
-//       ...prev,
-//       {
-//         type: 'text',
-//         text: '',
-//         x: 100,
-//         y: 100,
-        
-//       },
-//     ]);
-//   };
+  const addTextBox = () => {
+    setElements((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        type: 'text',
+        text: '',
+        x: 100,
+        y: 100,
+      },
+    ]);
+  };
 
-//   const handleTextChange = (index, newText) => {
-//     setElements((prev) =>
-//       prev.map((el, i) =>
-//         i === index ? { ...el, text: newText } : el
-//       )
-//     );
-//   };
+  const handleTextChange = (id, newText) => {
+    setElements((prev) =>
+      prev.map((el) => (el.id === id ? { ...el, text: newText } : el))
+    );
+  };
 
-//   const handleDelete = () => {
-//     setElements((prev) => prev.slice(0, -1));
-//   };
+  const handleDelete = (id) => {
+    setElements((prev) => prev.filter((el) => el.id !== id));
+  };
 
-//   useEffect(() => {
-//     const handleKeyDown = (e) => {
-//       if (e.key === 'Delete') {
-//         handleDelete();
-//       }
-//     };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Delete' && draggedElement !== null) {
+        handleDelete(draggedElement);
+        setDraggedElement(null);
+      }
+    };
 
-//     window.addEventListener('keydown', handleKeyDown);
-//     return () => window.removeEventListener('keydown', handleKeyDown);
-//   }, []);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [draggedElement]);
 
-//   const handleMouseMove = (e) => {
-//     if (draggedElement !== null) {
-//       const { index, offsetX, offsetY } = draggedElement;
-//       setElements((prev) =>
-//         prev.map((el, i) =>
-//           i === index
-//             ? { ...el, x: e.clientX - offsetX, y: e.clientY - offsetY }
-//             : el
-//         )
-//       );
-//     }
-//   };
+  const handleMouseMove = (e) => {
+    if (draggedElement !== null) {
+      setElements((prev) =>
+        prev.map((el) =>
+          el.id === draggedElement
+            ? { ...el, x: e.clientX - 50, y: e.clientY - 10 }
+            : el
+        )
+      );
+    }
+  };
 
-//   const handleMouseUp = () => {
-//     setDraggedElement(null);
-//   };
+  const handleMouseUp = () => {
+    setDraggedElement(null);
+  };
 
-//   const startDragging = (index, e) => {
-//     const rect = e.target.getBoundingClientRect();
-//     setDraggedElement({
-//       index,
-//       offsetX: e.clientX - rect.left,
-//       offsetY: e.clientY - rect.top,
-//     });
-//   };
+  const startDragging = (id) => {
+    setDraggedElement(id);
+  };
 
   return (
-    // <div
-    //   className="p-4"
-    //   onMouseMove={handleMouseMove}
-    //   onMouseUp={handleMouseUp}
-    // >
-      
-    //   <div className="ml-40 pt-[9rem]">
-    //     <Toolbar onAddText={addTextBox} />
-
-        // <div className="absolute ">
-        //   <Test />
-        // </div>
-
-    //     <div className="relative ">
-    //       {elements.map((el, index) =>
-    //         el.type === 'text' ? (
-    //           <TextBox
-    //             key={index}
-    //             text={el.text}
-    //             onChange={(newText) => handleTextChange(index, newText)}
-    //             style={{ top: el.y, left: el.x }}
-    //             onDrag={(e) => startDragging(index, e)}
-    //           />
-    //         ) : null
-    //       )}
-    //     </div>
-    //   </div>
-    // </div>
-
-    <div className="ml-[5.5rem] ">
-      {/* Toolbar */}
+    <div className=" ml-[5.5rem] " onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
       <Toolbar activePanel={activePanel} setActivePanel={setActivePanel} />
-
-      <div className="absolute left-[10rem] top-[10rem]">
-          <Test />
-      </div>
-      
-
-      {/* Active Panels */} 
-     
-      {activePanel === "edit" && <EditPanel addTable={addTable} />}
-      {activePanel === "insert" && <InsertPanel />}
+      {/* <div className="absolute left-[10rem] top-[10rem]">
+        <Test />
+      </div> */}
+      {activePanel === "edit" && <EditPanel />}
+      {activePanel === "insert" && <InsertPanel addTable={addTable} addTextBox={addTextBox} />}
       {activePanel === "arrange" && <ArrangePanel />}
       {activePanel === "view" && <ViewPanel />}
-
-      <div className="grid gap-4 p-4">
-        {tables.map((table) => (
-          <NewTableManager key={table.id} />
-        ))}
+      <div className="absolute top-[12rem] left-[10rem]">
+        {elements.map((el) =>
+          el.type === 'text' ? (
+            <TextBox
+              key={el.id}
+              text={el.text}
+              onChange={(newText) => handleTextChange(el.id, newText)}
+              style={{ top: el.y, left: el.x }}
+              onDrag={() => startDragging(el.id)}
+              onDelete={() => handleDelete(el.id)}
+            />
+          ) : null
+        )}
       </div>
-      
+      {/* <div className="absolute overfloe-hidden top-[9.5rem] w-full h-full ">
+        {tables.map((table) => (
+          <Test key={table.id} />
+        ))}
+      </div> */}
     </div>
-
   );
 };
 
 export default App;
-

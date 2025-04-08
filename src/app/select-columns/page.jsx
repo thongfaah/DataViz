@@ -28,29 +28,6 @@ const SelectColumnsPage = () => {
     fetchFiles();
   }, []);
 
-  // โหลดข้อมูลจากไฟล์ที่เลือก
-  // useEffect(() => {
-  //   if (!selectedFile) return;
-
-  //   const fetchData = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const res = await fetch(`/api/get-data?file=${selectedFile}`);
-  //       const result = await res.json();
-  //       if (!res.ok) throw new Error(result.error || "Failed to fetch data");
-
-  //       setData({ columns: result.columns, rows: result.rows });
-  //     } catch (error) {
-  //       console.error("Fetch Data Error:", error);
-  //       alert("❌ โหลดข้อมูลล้มเหลว!");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [selectedFile]);
-
   const toggleFileVisibility = async (file) => {
     setVisibleColumns((prev) => ({ ...prev, [file]: !prev[file] }));
 
@@ -92,11 +69,7 @@ const SelectColumnsPage = () => {
     {/* ตารางแสดงข้อมูล */}
     <div className="flex-1 p-8 ">
 
-      {
-      // Loading ? (
-      //   <p>Loading...</p>
-      // ) : 
-      selectedFile ? (
+      {selectedFile ? (
         <table className="w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-200">
