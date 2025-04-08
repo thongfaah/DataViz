@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const EditPanel = ({ addTable }) => {
+const EditPanel = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     // const [boxes, setBoxes] = useState([]);
     // const addNewBox = () => {
@@ -137,13 +137,13 @@ const EditPanel = ({ addTable }) => {
                     Fillter
                 </button> 
 
-                 {/* Transform Data*/}
+                 {/* Processing Data*/}
                  <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
                     <img 
                         src="/transform.png" alt="transformData" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "
                      />
-                    Transform Data
+                    Processing Data
                 </button>
                 </div>
         

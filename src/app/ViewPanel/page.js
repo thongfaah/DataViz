@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import CanvasArea from "../CanvasArea/page";
 
 const ViewPanel = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -118,8 +119,9 @@ const ViewPanel = () => {
                   </label>
                     </div>
                     )}
+
+                  {/* <CanvasArea showGrid={checked1} isLocked={checked2} /> */}
                 </div>
-                      
               </div>
     );
 };

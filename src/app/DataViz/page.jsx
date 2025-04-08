@@ -4,10 +4,10 @@ import { ChevronRight, ChevronLeft, Search } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import BarChartComponent from "../BarChartComponent/page";
 
-function DataViz() {
+function DataViz({viewMode, setViewMode}) {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
-  const [viewMode, setViewMode] = useState("table"); // "table" หรือ "chart"
+//  const [viewMode, setViewMode] = useState("table"); // "table" หรือ "chart"
   const toggleDropdown = (dropdownId) => {
     setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
   };
@@ -18,6 +18,8 @@ function DataViz() {
     });
     return newObj;
   });*/}
+
+
   return (
     <div className="relative">
                 <button 
@@ -52,7 +54,11 @@ function DataViz() {
 
                 {isDropdownOpen === "graph" && (
                     <ul className="absolute top-full mt-1 bg-white text-black shadow-lg rounded-md w-40 z-50 border border-gray-300">
-                        <li className="flex space-x-2 px-4 py-2 hover:bg-gray-200 cursor-pointer items-center " onClick={() => setViewMode("table")} >
+                        <li 
+                          className={`flex space-x-2 px-4 py-2 cursor-pointer items-center hover:bg-gray-200 
+                            ${viewMode === "table" ? "bg-gray-300" : ""}`} 
+                          onClick={() => setViewMode("table")} 
+                        >
                           <img 
                             src="/table.png" alt="table" style={{ width: '38px', height: 'auto' }} 
                             className=" px-2 max-h-full object-contain "
@@ -86,49 +92,7 @@ function DataViz() {
 
 
                     </ul>
-                    )}{/*
-                    {loading ? (
-                    <p>Loading...</p>
-                    ) : selectedFile ? (
-                    viewMode === "table" ? (
-                        <table className="w-full border-collapse border border-gray-300">
-                        <thead>
-                            <tr className="bg-gray-200">
-                            {selectedColumns.map((col, index) => (
-                                <th key={index} className="border border-gray-300 p-2">
-                                {col}
-                                </th>
-                            ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.rows.map((row, rowIndex) => (
-                            <tr key={rowIndex} className="hover:bg-gray-100">
-                                {selectedColumns.map((col, colIndex) => (
-                                <td key={colIndex} className="border border-gray-300 p-2">
-                                    {row[col] || "-"}
-                                </td>
-                                ))}
-                            </tr>
-                            ))}
-                        </tbody>
-                        </table>
-                    ) : (
-                        <ResponsiveContainer width="100%" height={400}>
-                        <BarChart data={chartData}>
-                            <XAxis dataKey={selectedColumns[0]} />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            {selectedColumns.slice(1).map((col, index) => (
-                            <Bar key={index} dataKey={col} fill={`#${Math.floor(Math.random()*16777215).toString(16)}`} />
-                            ))}
-                        </BarChart>
-                        </ResponsiveContainer>
-                    )
-                    ) : (
-                    <p>เริ่มสร้างภาพด้วยข้อมูลของคุณ</p>
-)}*/}
+                    )}
                 </div>
   )
 }
