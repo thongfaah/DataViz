@@ -5,19 +5,23 @@ import { Input } from '../components/ui/input/page';
 import { Select, SelectItem } from '../components/ui/select/page';
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell} from '../components/ui/table/page';
 import { Button } from '../components/ui/button/page';
+import { useRouter } from "next/navigation";
 
 export default function CsvTxtParser2() {
   const [data, setData] = useState([]);
   const [delimiter, setDelimiter] = useState(',');
   const [fileContent, setFileContent] = useState('');
   const [fileName, setFileName] = useState('');
-
+  const [rowsToShow, setRowsToShow] = useState(10); // ✅ เพิ่ม state นี้
+  const router = useRouter();
+  const handleProcessingClick = () => {
+    router.push('/DataProcessing'); // เปลี่ยนเส้นทางไปยังหน้าที่ต้องการ
+  };
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    setFileName(file.name); // เก็บชื่อไฟล์
-
+    setFileName(file.name);
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target.result;
@@ -70,6 +74,7 @@ export default function CsvTxtParser2() {
       alert('Failed to upload data');
     }
   };
+
   useEffect(() => {
     const savedFile = localStorage.getItem("uploadedFile");
     if (savedFile) {
@@ -78,16 +83,26 @@ export default function CsvTxtParser2() {
       setFileContent(content);
     }
   }, []);
-  
+
   return (
     <div className="p-4 space-y-4">
       <Input type="file" accept=".csv,.txt" onChange={handleFileUpload} />
+      
       <Select onChange={(value) => setDelimiter(value)}>
         <SelectItem value=",">Comma (,)</SelectItem>
         <SelectItem value="\t">Tab (\t)</SelectItem>
         <SelectItem value=" ">Space ( )</SelectItem>
         <SelectItem value="auto">Auto Detect</SelectItem>
       </Select>
+
+      {/* ✅ Dropdown เลือกจำนวนแถว */}
+      <Select onChange={(value) => setRowsToShow(Number(value))}>
+        <SelectItem value="10">Show 10 rows</SelectItem>
+        <SelectItem value="20">Show 20 rows</SelectItem>
+      </Select>
+      <button onClick={handleProcessingClick} className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
+                  Processing Data
+      </button>
       <Button onClick={handleUploadToDB} className="bg-blue-500 text-white">Upload to Database</Button>
 
       <Table>
@@ -99,7 +114,7 @@ export default function CsvTxtParser2() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.slice(1).map((row, rowIndex) => (
+          {data.slice(1, rowsToShow + 1).map((row, rowIndex) => (
             <TableRow key={rowIndex}>
               {row.map((cell, colIndex) => (
                 <TableCell key={colIndex}>{cell}</TableCell>
