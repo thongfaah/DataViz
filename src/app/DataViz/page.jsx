@@ -55,8 +55,7 @@ function DataViz({viewMode, setViewMode}) {
                 {isDropdownOpen === "graph" && (
                     <ul className="absolute top-full mt-1 bg-white text-black shadow-lg rounded-md w-40 z-50 border border-gray-300">
                         <li 
-                          className={`flex space-x-2 px-4 py-2 cursor-pointer items-center hover:bg-gray-200 
-                            ${viewMode === "table" ? "bg-gray-300" : ""}`} 
+                          className="flex space-x-2 px-4 py-2 cursor-pointer items-center hover:bg-gray-200"
                           onClick={() => setViewMode("table")} 
                         >
                           <img 

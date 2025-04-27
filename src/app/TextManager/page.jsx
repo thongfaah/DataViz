@@ -5,7 +5,7 @@ import { ChevronRight, ChevronLeft, Bold, Italic, Underline, AlignLeft, AlignCen
 
 const TextBox = ({ text, onChange, style, onDelete }) => {
   const [isSelected, setIsSelected] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
   const [size, setSize] = useState("20");
   const [font, setFont] = useState("Inner");
   const [color, setColor] = useState("#000000");
@@ -112,7 +112,7 @@ const TextBox = ({ text, onChange, style, onDelete }) => {
      {/* Sidebar Panel (Right Side) */}
      <div className="relative">
         {showSidebar && (
-          <div className="w-64 bg-white border-l p-4 shadow-lg fixed right-0 top-[9.7rem] h-[34.1rem] flex flex-col">
+          <div className="w-64 bg-white border-l p-4 shadow-lg fixed right-0 top-[9.7rem] h-[34.1rem] flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-semibold text-[#2B3A67]">Text</h2>
               <button
@@ -120,7 +120,7 @@ const TextBox = ({ text, onChange, style, onDelete }) => {
                 onClick={() => setShowSidebar(false)}
               >
                 <svg width="20" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M13.5417 17.7083L18.75 12.5L13.5417 7.29163M6.25 17.7083L11.4583 12.5L6.25 7.29163" stroke="#2B3A67" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M13.5417 17.7083L18.75 12.5L13.5417 7.29163M6.25 17.7083L11.4583 12.5L6.25 7.29163" stroke="#2B3A67" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
             </div>
