@@ -8,7 +8,7 @@ import PieChartView from "../Piechart/page";
 import BarChartView from "../Barchart/page";
 import DataViz from "../DataViz/page";
 
-const Test = () => {
+const Test = ({ initialX = 0, initialY = 0 }) => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState("");
   const [data, setData] = useState({});
@@ -17,14 +17,16 @@ const Test = () => {
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [viewMode, setViewMode] = useState("table");
-  const [posX, setPosX] = useState(0);
-  const [posY, setPosY] = useState(0)
+  const [posX, setPosX] = useState(initialX);
+  const [posY, setPosY] = useState(initialY)
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(300);
   const [isFocused, setIsFocused] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
   const targetRef = useRef(null);
   const moveableRef = useRef(null);
+  const [zIndex, setZIndex] = useState(0);
+  const [isDeleted, setIsDeleted] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -160,20 +162,53 @@ const Test = () => {
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Delete table
+    useEffect(() => {
+      const handleKeyDown = (e) => {
+        if (isSelected && (e.key === "Delete" || e.key === "Backspace")) {
+          setIsDeleted(true);
+        }
+      };
+    
+      const handleContextMenu = (e) => {
+        if (isSelected && targetRef.current && targetRef.current.contains(e.target)) {
+          e.preventDefault();
+          const confirmDelete = window.confirm("คุณต้องการลบกล่องนี้หรือไม่?");
+          if (confirmDelete) {
+            setIsDeleted(true);
+          }
+        }
+      };
+    
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("contextmenu", handleContextMenu);
+    
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("contextmenu", handleContextMenu);
+      };
+    }, [isSelected]);
 
   return (
-
-
-   
-    <div className=" flex overflow-hidden w-full h-full ">
+    isDeleted ? null : (
+    <div className="absolute">
     
       <div
         ref={targetRef}
-        onMouseDown={() => setIsSelected(true)}
-        className="relative overflow-hidden  cursor-move"
-        style={{ transform: `translate(${posX}px, ${posY}px)`, width: `${width}px`, height: `${height}px` }}
+        onMouseDown={() => {
+          setIsSelected(true)
+          setZIndex(Date.now());
+        }}
+        className="overflow-hidden  cursor-move"
+        style=
+        {{ 
+          transform: `translate(${posX}px, ${posY}px)`, 
+          width: `${width}px`, 
+          height: `${height}px`, 
+          zIndex, 
+        }}
       >
-        <div className="p-8 border border-gray-300 w-full h-full shadow-lg cursor-move ">
+        <div className="p-8 border border-gray-300 bg-transparent w-full h-full shadow-lg cursor-move ">
           <div className="mb-4 flex gap-4">
             <button
               className={`p-2 border rounded ${viewMode === "table" ? "bg-blue-500 text-white" : ""}`}
@@ -254,7 +289,7 @@ const Test = () => {
           onClick={() => setIsSidebarOpen(false)}
         >
           <svg width="20" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13.5417 17.7083L18.75 12.5L13.5417 7.29163M6.25 17.7083L11.4583 12.5L6.25 7.29163" stroke="#2B3A67" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.5417 17.7083L18.75 12.5L13.5417 7.29163M6.25 17.7083L11.4583 12.5L6.25 7.29163" stroke="#2B3A67" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
 
@@ -300,6 +335,7 @@ const Test = () => {
           </button>
         )}
     </div>
+    )
   );
 };
 

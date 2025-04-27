@@ -10,43 +10,68 @@ import ArrangePanel from '../ArrangePanel/page';
 import ViewPanel from '../ViewPanel/page';
 import NewTableManager from '../์NewTableManager/page';
 import SelectColumnsPage from '../select-columns/page';
-import Link from 'next/link';
-import Test from '../Test/page';
+import { v4 as uuidv4 } from "uuid";
 import TextBox from '../TextManager/page';
 
 
 const App = () => {
   const [activePanel, setActivePanel] = useState("edit");
-  const [tables, setTables] = useState([]);
+  // const [pageItems, setPageItems] = useState([]);
   const [elements, setElements] = useState([]);
   const [draggedElement, setDraggedElement] = useState(null);
   const [viewMode, setViewMode] = useState("table");
+  const [pages, setPages] = useState([[]]); // array of pageItems
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageItems = pages[currentPage] || [];
+
+  // const addTable = () => {
+  //   setPageItems((prev) => [...prev, { id: Date.now(), type: "test" }]);
+  // };
 
   const addTable = () => {
-    setTables([...tables, { id: Date.now() }]); // เพิ่มตารางใหม่โดยสร้าง id ที่ไม่ซ้ำ
+    const newItem = { id: Date.now(), type: "test" };
+
+    setPages(prev => {
+      const updated = [...prev];
+      updated[currentPage] = [...updated[currentPage], newItem];
+      return updated;
+    });
   };
 
+  
+
   const addTextBox = () => {
-    setElements((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        type: 'text',
-        text: '',
-        x: 100,
-        y: 100,
-      },
-    ]);
+    const newItem = {
+      id: Date.now(),
+      type: 'text',
+      text: '',
+      x: 100,
+      y: 100,
+    };
+  
+    setPages(prev => {
+      const updated = [...prev];
+      updated[currentPage] = [...updated[currentPage], newItem]; // ✅ newItem อยู่ใน scope นี้
+      return updated;
+    });
   };
 
   const handleTextChange = (id, newText) => {
-    setElements((prev) =>
-      prev.map((el) => (el.id === id ? { ...el, text: newText } : el))
-    );
+    setPages(prev => {
+      const updated = [...prev];
+      updated[currentPage] = updated[currentPage].map(el =>
+        el.id === id ? { ...el, text: newText } : el
+      );
+      return updated;
+    });
   };
 
   const handleDelete = (id) => {
-    setElements((prev) => prev.filter((el) => el.id !== id));
+    setPages(prev => {
+      const updated = [...prev];
+      updated[currentPage] = updated[currentPage].filter(el => el.id !== id);
+      return updated;
+    });
   };
 
   useEffect(() => {
@@ -82,17 +107,27 @@ const App = () => {
   };
 
   return (
-    <div className=" ml-[5.5rem] " onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
-      <Toolbar activePanel={activePanel} setActivePanel={setActivePanel} />
-      {/* <div className="absolute left-[10rem] top-[10rem]">
-        <Test />
-      </div> */}
+    <div className=" ml-[5.5rem] z-0" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
+      <Toolbar 
+      activePanel={activePanel} 
+      setActivePanel={setActivePanel} 
+      pages={pages}
+      setPages={setPages}
+      currentPage={currentPage}
+      setCurrentPage={setCurrentPage} 
+      />
+
       {activePanel === "edit" && <EditPanel />}
       {activePanel === "insert" && <InsertPanel addTable={addTable} addTextBox={addTextBox} />}
       {activePanel === "arrange" && <ArrangePanel />}
       {activePanel === "view" && <ViewPanel />}
+
+      👇 เพิ่ม CanvasArea ตรงนี้
+    {/* <CanvasArea pageItems={pageItems} /> */}
       <div className="absolute top-[12rem] left-[10rem]">
-        {elements.map((el) =>
+      
+
+        {pages[currentPage]?.map((el) =>
           el.type === 'text' ? (
             <TextBox
               key={el.id}
@@ -105,11 +140,11 @@ const App = () => {
           ) : null
         )}
       </div>
-      {/* <div className="absolute overfloe-hidden top-[9.5rem] w-full h-full ">
-        {tables.map((table) => (
-          <Test key={table.id} />
-        ))}
-      </div> */}
+
+      {/* {tables.map((table) => (
+        <Test key={table.id} />
+      ))} */}
+      
     </div>
   );
 };
