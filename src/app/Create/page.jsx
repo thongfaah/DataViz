@@ -227,7 +227,7 @@ const handleUploadToDB = async () => {
               <button onClick={toggleFullScreen} className="absolute text-2xl text-gray-500 top-1 right-10">
                 {isFullScreen ? "🗗" : "▢"}
               </button>
-              <CsvTxtParser fileContent={fileContent} delimiter={localStorage.getItem("delimiter") || ','} />
+              <CsvTxtParser2 fileContent={fileContent} delimiter={localStorage.getItem("delimiter") || ','} />
               <div className="absolute bottom-6 right-0 w-full flex flex-row justify-end bg-white space-x-4 px-8 py-2 ">
                 <button onClick={handleUploadToDB}  className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
                   Upload

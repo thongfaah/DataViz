@@ -17,6 +17,9 @@ export default function CsvTxtParser2() {
   const handleProcessingClick = () => {
     router.push('/DataProcessing'); // เปลี่ยนเส้นทางไปยังหน้าที่ต้องการ
   };
+  
+  
+  
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -75,14 +78,8 @@ export default function CsvTxtParser2() {
     }
   };
 
-  useEffect(() => {
-    const savedFile = localStorage.getItem("uploadedFile");
-    if (savedFile) {
-      const { name, content } = JSON.parse(savedFile);
-      setFileName(name);
-      setFileContent(content);
-    }
-  }, []);
+  
+  
 
   return (
     <div className="p-4 space-y-4">
@@ -100,10 +97,10 @@ export default function CsvTxtParser2() {
         <SelectItem value="10">Show 10 rows</SelectItem>
         <SelectItem value="20">Show 20 rows</SelectItem>
       </Select>
-      <button onClick={handleProcessingClick} className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
-                  Processing Data
-      </button>
+      
       <Button onClick={handleUploadToDB} className="bg-blue-500 text-white">Upload to Database</Button>
+      
+
 
       <Table>
         <TableHeader>
