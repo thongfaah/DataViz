@@ -1,9 +1,15 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, PieChart, Pie } from "recharts";
+import Moveable from "react-moveable";
+import TableView from "../TableView/page";
+import PieChartView from "../Piechart/page";
+import BarChartView from "../Barchart/page";
+import DataViz from "../DataViz/page";
 
-const Test = () => {
+
+const Test = ({ initialX = 0, initialY = 0 }) => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState("");
   const [data, setData] = useState({});
@@ -12,7 +18,44 @@ const Test = () => {
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [viewMode, setViewMode] = useState("table");
+  const [posX, setPosX] = useState(initialX);
+  const [posY, setPosY] = useState(initialY)
+  const [width, setWidth] = useState(400);
+  const [height, setHeight] = useState(300);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
+  const targetRef = useRef(null);
+  const moveableRef = useRef(null);
+  const [zIndex, setZIndex] = useState(0);
+  const [isDeleted, setIsDeleted] = useState(false);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (targetRef.current && !targetRef.current.contains(e.target)) {
+        setIsFocused(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (targetRef.current) {
+      targetRef.current.style.width = `${width}px`;
+      targetRef.current.style.height = `${height}px`;
+    }
+  }, [width, height]);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+  
   useEffect(() => {
     const fetchFiles = async () => {
       try {
@@ -55,6 +98,34 @@ const Test = () => {
     });
   };
 
+  const generateRandomColor = () => {
+    return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}`;
+  };
+
+  const pieData = useMemo(() => {
+    if (!selectedFile || !data[selectedFile]?.rows || selectedColumns[selectedFile]?.length !== 2) {
+      return [];
+    }
+  
+    return data[selectedFile].rows.map(row => ({
+      name: row[selectedColumns[selectedFile][0]] || "",
+      value: Number(row[selectedColumns[selectedFile][1]]) || 0,
+      fill: generateRandomColor() // ใช้ฟังก์ชันสุ่มสี
+    }));
+  }, [selectedFile, data, selectedColumns]);
+
+  // const generateColors = useMemo(() => {
+  //   const colors = {};
+  //   return (col) => {
+  //     if (!colors[col]) {
+  //       colors[col] = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+  //     }
+  //     return colors[col];
+  //   };
+  // }, []);
+
+  
+
   const chartData = selectedFile && data[selectedFile]?.rows
     ? data[selectedFile].rows.map((row) => {
         let newObj = { name: row[selectedColumns[selectedFile]?.[0]] || "" };
@@ -65,109 +136,169 @@ const Test = () => {
       })
     : [];
 
-    const pieData = selectedFile && data[selectedFile]?.rows
-    ? selectedColumns[selectedFile]?.length === 2
-      ? data[selectedFile].rows.map(row => ({
-          name: row[selectedColumns[selectedFile][0]] || "",
-          value: Number(row[selectedColumns[selectedFile][1]]) || 0
-        }))
-      : []
-    : [];
-  
+
+
+    // const pieData = selectedFile && data[selectedFile]?.rows
+    // ? selectedColumns[selectedFile]?.length === 2
+    //   ? data[selectedFile].rows.map(row => ({
+    //       name: row[selectedColumns[selectedFile][0]] || "",
+    //       value: Number(row[selectedColumns[selectedFile][1]]) || 0
+    //     }))
+    //   : []
+    // : [];
+
+    useEffect(() => {
+      if (targetRef.current) {
+        targetRef.current.style.width = `${width}px`;
+        targetRef.current.style.height = `${height}px`;
+      }
+    }, [width, height]);
+
+    useEffect(() => {
+      const handleClickOutside = (e) => {
+        if (targetRef.current && !targetRef.current.contains(e.target)) {
+          setIsSelected(false);
+        }
+      };
+    
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Delete table
+    useEffect(() => {
+      const handleKeyDown = (e) => {
+        if (isSelected && (e.key === "Delete" || e.key === "Backspace")) {
+          setIsDeleted(true);
+        }
+      };
+    
+      const handleContextMenu = (e) => {
+        if (isSelected && targetRef.current && targetRef.current.contains(e.target)) {
+          e.preventDefault();
+          const confirmDelete = window.confirm("คุณต้องการลบกล่องนี้หรือไม่?");
+          if (confirmDelete) {
+            setIsDeleted(true);
+          }
+        }
+      };
+    
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("contextmenu", handleContextMenu);
+    
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("contextmenu", handleContextMenu);
+      };
+    }, [isSelected]);
 
   return (
-    <div className="flex">
-      <div className="flex-1 p-8 border border-gray-300 w-auto">
-        <div className="mb-4 flex gap-4">
-          <button
-            className={`p-2 border rounded ${viewMode === "table" ? "bg-blue-500 text-white" : ""}`}
-            onClick={() => setViewMode("table")}
-          >
-            แสดงเป็นตาราง
-          </button>
-          <button
-            className={`p-2 border rounded ${viewMode === "chart" ? "bg-blue-500 text-white" : ""}`}
-            onClick={() => setViewMode("chart")}
-          >
-            กราฟแท่ง
-          </button>
-        </div>
-        <button
-  className={`p-2 border rounded ${viewMode === "pie" ? "bg-blue-500 text-white" : ""}`}
-  onClick={() => setViewMode("pie")}
->
-  แผนภูมิวงกลม
-</button>
+    isDeleted ? null : (
+    <div className="absolute">
+    
+      <div
+        ref={targetRef}
+        onMouseDown={() => {
+          setIsSelected(true)
+          setZIndex(Date.now());
+        }}
+        className="overflow-hidden  cursor-move"
+        style=
+        {{ 
+          transform: `translate(${posX}px, ${posY}px)`, 
+          width: `${width}px`, 
+          height: `${height}px`, 
+          zIndex, 
+        }}
+      >
+        <div className="p-8 border border-gray-300 bg-transparent w-full h-full shadow-lg cursor-move ">
+          <div className="mb-4 flex gap-4">
+            <button
+              className={`p-2 border rounded ${viewMode === "table" ? "bg-blue-500 text-white" : ""}`}
+              onClick={() => setViewMode("table")}
+            >
+              แสดงเป็นตาราง
+            </button>
+            <button
+              className={`p-2 border rounded ${viewMode === "chart" ? "bg-blue-500 text-white" : ""}`}
+              onClick={() => setViewMode("chart")}
+            >
+              กราฟแท่ง
+            </button>
 
-
+            <button
+            className={`p-2 border rounded ${viewMode === "pie" ? "bg-blue-500 text-white" : ""}`}
+            onClick={() => setViewMode("pie")}
+            >
+              แผนภูมิวงกลม
+            </button>
+          </div>
+ 
         {loading ? (
           <p>Loading...</p>
         ) : selectedFile ? (
           viewMode === "table" ? (
-            <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-200">
-                  {selectedColumns[selectedFile]?.map((col, index) => (
-                    <th key={index} className="border border-gray-300 p-2">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data[selectedFile]?.rows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="hover:bg-gray-100">
-                    {selectedColumns[selectedFile]?.map((col, colIndex) => (
-                      <td key={colIndex} className="border border-gray-300 p-2">{row[col] || "-"}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <TableView selectedFile={selectedFile} selectedColumns={selectedColumns} data={data} />
           ) :  viewMode === "pie" ? (
-            pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={400}>
-                <PieChart>
-                  <Tooltip />
-                  <Legend />
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={120}
-                    fill="#8884d8"
-                    label
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <p>กรุณาเลือก 2 คอลัมน์ (1 Label + 1 Value) สำหรับแผนภูมิวงกลม</p>
-            ) 
-            ) : (
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {selectedColumns[selectedFile]?.slice(1).map((col, index) => (
-                  <Bar key={index} dataKey={col} fill={`#${Math.floor(Math.random() * 16777215).toString(16)}`} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
+            <PieChartView pieData={pieData} width={width} height={height} />
+            ) :
+              (
+                <BarChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />
+
           )
-        ) : (
-          <p>เริ่มสร้างภาพด้วยข้อมูลของคุณ</p>
-        )}
+        ) : null
+        // (
+        //   <p>เริ่มสร้างภาพด้วยข้อมูลของคุณ</p>
+        // )
+        }
+         
+      </div>
       </div>
 
-      <div className={`fixed top-[9.7rem] h-[35.1rem] right-0 w-64 bg-white shadow-md border-l border-gray-300 transition-transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}>
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="absolute top-4 -left-10 bg-gray-200 p-2 rounded-l-md">
+      {isSelected && (
+        <Moveable
+          ref={moveableRef}
+          target={targetRef.current}
+          draggable={true}
+          resizable={true}
+          keepRatio={false}
+          edge={false}
+          throttleResize={1}
+          onDrag={({ beforeTranslate }) => {
+            setPosX(beforeTranslate[0]);
+            setPosY(beforeTranslate[1]);
+          }}
+          onResize={({ target, width, height }) => {
+            const minWidth = 150;
+            const minHeight = 100;
+            target.style.width = `${Math.max(width, minWidth)}px`;
+            target.style.height = `${Math.max(height, minHeight)}px`;
+            setWidth(Math.max(width, minWidth));
+            setHeight(Math.max(height, minHeight));
+          }}
+        />
+      )}
+
+      
+      <div className={`fixed top-[9.7rem] h-[34.1rem] right-0 w-[15rem] bg-white shadow-md border-l border-gray-300 transition-transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}>
+        {/* <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+          className="absolute top-4 right-4 bg-gray-200 p-2 rounded-md z-10"
+        >
           {isSidebarOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button> */}
+        <button
+          className="absolute top-4 right-4  p-2 z-10 item-center rounded  hover:bg-gray-100 "
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <svg width="20" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.5417 17.7083L18.75 12.5L13.5417 7.29163M6.25 17.7083L11.4583 12.5L6.25 7.29163" stroke="#2B3A67" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
+
         <div className="p-4 overflow-y-auto h-full">
           <h2 className="text-lg font-bold text-[#2B3A67] mb-4">Data</h2>
+          <div className="border-t pt-2 pb-3">
           {files.map((file, index) => (
             <div key={index} className="mb-2">
               <button onClick={() => { setSelectedFile(file); toggleFileVisibility(file); }} className={`flex w-full text-left text-sm p-2  ${selectedFile === file ? "bg-gray-100" : ""}`}>
@@ -195,186 +326,22 @@ const Test = () => {
             </div>
           ))}
         </div>
+        </div>
       </div>
+
+      {!isSidebarOpen && (
+          <button
+            className="fixed right-0  p-2 bg-gray-200 hover:bg-gray-300 rounded-l"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <ChevronLeft className="w-4 h-4"/>
+          </button>
+        )}
     </div>
+    )
   );
 };
 
 export default Test;
 
 
-// "use client";
-// import React, { useEffect, useState } from "react";
-// import { ChevronRight, ChevronLeft, Search } from "lucide-react";
-// import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
-
-// const Test = () => {
-//   const [files, setFiles] = useState([]); 
-//   const [selectedFile, setSelectedFile] = useState(""); 
-//   const [data, setData] = useState({ columns: [], rows: [] });
-//   const [selectedColumns, setSelectedColumns] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [viewMode, setViewMode] = useState("table"); // "table" หรือ "chart"
-
-//   useEffect(() => {
-//     const fetchFiles = async () => {
-//       try {
-//         const res = await fetch("/api/list-files");
-//         const result = await res.json();
-//         if (!res.ok) throw new Error(result.error || "Failed to fetch files");
-//         setFiles(result.files);
-//       } catch (error) {
-//         console.error("Fetch Files Error:", error);
-//         alert("❌ โหลดรายการไฟล์ล้มเหลว!");
-//       }
-//     };
-//     fetchFiles();
-//   }, []);
-
-//   useEffect(() => {
-//     if (!selectedFile) return;
-
-//     const fetchData = async () => {
-//       try {
-//         setLoading(true);
-//         const res = await fetch(`/api/get-data?file=${selectedFile}`);
-//         const result = await res.json();
-//         if (!res.ok) throw new Error(result.error || "Failed to fetch data");
-
-//         setData({ columns: result.columns, rows: result.rows });
-//       } catch (error) {
-//         console.error("Fetch Data Error:", error);
-//         alert("❌ โหลดข้อมูลล้มเหลว!");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [selectedFile]);
-
-//   const handleFileChange = (event) => {
-//     setSelectedFile(event.target.value);
-//     setSelectedColumns([]);
-//   };
-
-//   const toggleColumn = (col) => {
-//     setSelectedColumns((prev) =>
-//       prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
-//     );
-//   };
-
-//   // แปลงข้อมูลเป็นรูปแบบที่ Recharts ใช้ได้
-//   const chartData = data.rows.map((row) => {
-//     let newObj = {};
-//     selectedColumns.forEach((col) => {
-//       newObj[col] = isNaN(row[col]) ? 0 : Number(row[col]); // ตรวจสอบค่าตัวเลข
-//     });
-//     return newObj;
-//   }
-// );
-
-//   return (
-//     <div className="flex">
-//       {/* แสดงข้อมูลแบบตารางหรือกราฟ */}
-//       <div className="flex-1 p-8 border border-gray-300 w-full">
-//         <div className="mb-4 flex gap-4">
-//           <button
-//             className={`p-2 border rounded ${viewMode === "table" ? "bg-blue-500 text-white" : ""}`}
-//             onClick={() => setViewMode("table")}
-//           >
-//             แสดงเป็นตาราง
-//           </button>
-//           <button
-//             className={`p-2 border rounded ${viewMode === "chart" ? "bg-blue-500 text-white" : ""}`}
-//             onClick={() => setViewMode("chart")}
-//           >
-//             กราฟแท่ง
-//           </button>
-//         </div>
-
-//         {loading ? (
-//           <p>Loading...</p>
-//         ) : selectedFile ? (
-//           viewMode === "table" ? (
-//             <table className="w-full border-collapse border border-gray-300">
-//               <thead>
-//                 <tr className="bg-gray-200">
-//                   {selectedColumns.map((col, index) => (
-//                     <th key={index} className="border border-gray-300 p-2">
-//                       {col}
-//                     </th>
-//                   ))}
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {data.rows.map((row, rowIndex) => (
-//                   <tr key={rowIndex} className="hover:bg-gray-100">
-//                     {selectedColumns.map((col, colIndex) => (
-//                       <td key={colIndex} className="border border-gray-300 p-2">
-//                         {row[col] || "-"}
-//                       </td>
-//                     ))}
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           ) : (
-//             <ResponsiveContainer width="100%" height={400}>
-//               <BarChart data={chartData}>
-//                 <XAxis dataKey={selectedColumns[0]} />
-//                 <YAxis />
-//                 <Tooltip />
-//                 <Legend />
-//                 {selectedColumns.slice(1).map((col, index) => (
-//                   <Bar key={index} dataKey={col} fill={`#${Math.floor(Math.random()*16777215).toString(16)}`} />
-//                 ))}
-//               </BarChart>
-//             </ResponsiveContainer>
-//           )
-//         ) : (
-//           <p>เริ่มสร้างภาพด้วยข้อมูลของคุณ</p>
-//         )}
-//       </div>
-
-//       {/* Sidebar */}
-//       <div className={`fixed top-[9.7rem] h-full right-0 w-64 bg-white shadow-md border-l border-gray-300 transition-transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}>
-//         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="absolute top-4 -left-10 bg-gray-200 p-2 rounded-l-md">
-//           {isSidebarOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-//         </button>
-//         <div className="p-4">
-//           <h2 className="text-lg font-bold text-[#2B3A67] mb-4">Data</h2>
-
-//           <select className="mb-4 p-2 border rounded w-full" value={selectedFile} onChange={handleFileChange}>
-//             <option value="">Select file</option>
-//             {files.map((file, index) => (
-//               <option key={index} value={file}>
-//                 {file}
-//               </option>
-//             ))}
-//           </select>
-
-//           {selectedFile && (
-//             <div className="overflow-y-auto max-h-60">
-//               {data.columns.filter(col => col.toLowerCase().includes(searchTerm.toLowerCase())).map((col, index) => (
-//                 <label key={index} className="block">
-//                   <input
-//                     type="checkbox"
-//                     checked={selectedColumns.includes(col)}
-//                     onChange={() => toggleColumn(col)}
-//                     className="mr-2"
-//                   />
-//                   {col}
-//                 </label>
-//               ))}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Test;

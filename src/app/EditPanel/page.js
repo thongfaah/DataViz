@@ -2,6 +2,11 @@ import React, { useState } from "react";
 
 const EditPanel = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    // const [boxes, setBoxes] = useState([]);
+    // const addNewBox = () => {
+    //     setBoxes([...boxes, { id: Date.now(), x: 50, y: 50, width: 200, height: 150 }]);
+    // };
+
 
     return (
     
@@ -102,22 +107,26 @@ const EditPanel = () => {
                 </button> 
 
                     {/* New table */}
-                    <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
+                   
+                    {/* <button 
+                        onClick={addTable}
+                        className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
                     <img 
                         src="/newtable.png" alt="newTable" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "
                      />
                     new table
-                </button> 
+                </button> */}
+                
 
                 {/* text */}
-                <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
+                {/* <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
                     <img 
                         src="/text.png" alt="text" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "
                      />
                     Text
-                </button> 
+                </button>  */}
 
                 {/* Fillter */}
                 <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
@@ -128,13 +137,13 @@ const EditPanel = () => {
                     Fillter
                 </button> 
 
-                 {/* Transform Data*/}
+                 {/* Processing Data*/}
                  <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
                     <img 
                         src="/transform.png" alt="transformData" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "
                      />
-                    Transform Data
+                    Processing Data
                 </button>
                 </div>
         
