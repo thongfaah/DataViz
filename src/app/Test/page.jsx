@@ -8,6 +8,7 @@ import PieChartView from "../Piechart/page";
 import BarChartView from "../Barchart/page";
 import DataViz from "../DataViz/page";
 
+
 const Test = ({ initialX = 0, initialY = 0 }) => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState("");
@@ -135,6 +136,8 @@ const Test = ({ initialX = 0, initialY = 0 }) => {
       })
     : [];
 
+
+
     // const pieData = selectedFile && data[selectedFile]?.rows
     // ? selectedColumns[selectedFile]?.length === 2
     //   ? data[selectedFile].rows.map(row => ({
@@ -230,8 +233,7 @@ const Test = ({ initialX = 0, initialY = 0 }) => {
               แผนภูมิวงกลม
             </button>
           </div>
-
-      
+ 
         {loading ? (
           <p>Loading...</p>
         ) : selectedFile ? (
@@ -242,6 +244,7 @@ const Test = ({ initialX = 0, initialY = 0 }) => {
             ) :
               (
                 <BarChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />
+
           )
         ) : null
         // (
