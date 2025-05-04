@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.4",
+    "arquero": "^8.0.1",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "bootstrap": "^5.3.3",
@@ -45,6 +46,6 @@
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.17"
   }
 }

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
+import AppendModal from '../AppendModal/page';
+import { useMainData } from "../MainDataContext/page";
 
 const HomeTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -15,6 +17,8 @@ const HomeTab = () => {
   const SplitColumnRef = useRef(null);
   const MergeQueriesRef = useRef(null);
   const AppendQueriesRef = useRef(null);
+  const [showAppend, setShowAppend] = useState(false);
+  const { mainData } = useMainData();
   
   
 
@@ -518,33 +522,21 @@ const HomeTab = () => {
                     </ul>
                 )}
               </div>
-              <div className="relative " ref={AppendQueriesRef}>
-                <button
-                    className={`px-1 py-1 rounded hover:bg-gray-200 flex items-center ${isDropdownOpen === "AppendQueries-file" ? "bg-gray-200" : ""}`}
-                    onClick={() => toggleDropdown("AppendQueries-file")}
-                >
-                    <svg width="18" height="18" viewBox="0 0 165 186" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div  >
+                  <button
+                      className="px-1 py-1 rounded hover:bg-gray-200 flex  items-center" 
+                      onClick={() => setShowAppend(true)}
+                  >
+                      <svg width="18" height="18" viewBox="0 0 165 186" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M103.125 20.6667L103.125 -2.70464e-06L165 0L165 82.6667L144.375 82.6667L144.375 20.6667L103.125 20.6667ZM20.625 165.333L20.625 103.333L1.07419e-05 103.333L7.12847e-06 186L61.875 186L61.875 165.333L20.625 165.333ZM20.625 20.6667L61.875 20.6667L61.875 -4.50774e-06L1.52588e-05 -7.21238e-06L1.16453e-05 82.6667L20.625 82.6667L20.625 20.6667ZM165 186L165 103.333L144.375 103.333L144.375 165.333L103.125 165.333L103.125 186L165 186ZM72.1875 51.6667L51.5625 51.6667L82.5 82.6667L113.438 51.6667L92.8125 51.6667L92.8125 -3.15542e-06L72.1875 -4.05696e-06L72.1875 51.6667ZM92.8125 134.333L113.437 134.333L82.5 103.333L51.5625 134.333L72.1875 134.333L72.1875 186L92.8125 186L92.8125 134.333Z" fill="#2B3A67"/>
                     </svg>
 
-                    <span className="ml-2.5" style={{ fontSize: "0.75rem" }}>Append Queries▾</span>
-                   
-                </button>
-                {isDropdownOpen === "AppendQueries-file" && (
-                    <ul className="absolute top-full  bg-white text-black shadow-lg  w-40 z-50 border border-gray-300">
-                    <li className="flex space-x-2 px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <svg className="px-2" width="39" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0.5" y="0.5" width="20" height="20" fill="#E3E3E3" stroke="black" />
-                        </svg>
-                        square
-                    </li>
-                    <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <img src="/circle.png" alt="circle" style={{ width: "38px", height: "auto" }} className="px-2 max-h-full object-contain" />
-                        circle
-                    </li>
-                    </ul>
-                )}
-              </div>
+                      <span className="ml-2.5" style={{ fontSize: "0.75rem" }}>Append Queries</span>
+                  </button>
+                  {showAppend && (
+                    <AppendModal onClose={() => setShowAppend(false)} mainData={mainData} />
+                  )}
+              </div> 
               <div  >
                   <button
                       className="px-1 py-1 rounded hover:bg-gray-200 flex  items-center" 

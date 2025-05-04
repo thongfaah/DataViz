@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+
 
 const TransformTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -56,12 +56,7 @@ const TransformTab = () => {
             </button>
             <div className="flex flex-col">
                 <div  >
-                <Checkbox
-                checked={checked}
-                onCheckedChange={setChecked}
-                id="terms"
-                className="border-2 border-black data-[state=checked]:bg-white w-4 h-4"
-                />
+                
                 <label htmlFor="terms" className="text-sm">
                 ยอมรับเงื่อนไขการใช้งาน
                 </label>
