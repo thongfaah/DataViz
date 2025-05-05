@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import AppendModal from '../AppendModal/page';
 import { useMainData } from "../MainDataContext/page";
+import DeleteColumnButton from "../componentsDPfeature/DeleteColumnButton";
+import RemoveRowsButton from "../componentsDPfeature/RemoveRowsButton";
+import ColumnTypeChanger from "../componentsDPfeature/ColumnTypeChanger";
 
 const HomeTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -142,6 +145,7 @@ const HomeTab = () => {
                 <span className="block  mt-1.25" style={{ fontSize: "0.75rem" }}>Enter</span>
                 <span className="block" style={{ fontSize: "0.75rem" }}>Data</span>
             </button>
+            
         </div>
         <p className="text-xs text-black">New Query</p>
     </div>
@@ -305,33 +309,8 @@ const HomeTab = () => {
                 )}
             </div>
             <div className="relative inline-block" ref={RemoveColumnsRef}>
-                <button
-                    className={`btn flex flex-col items-center ${isDropdownOpen === "RemoveColumns-file" ? "bg-gray-200" : ""}`}
-                    onClick={() => toggleDropdown("RemoveColumns-file")}
-                >
-                    <svg width="35" height="35" viewBox="0 0 79 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M26.3333 0H52.6667V48.0352L39.5 62.0674L26.3333 47.9912V0ZM79 0V45.044H57.9333V39.4135H73.7333V0H79ZM5.26667 39.4135H21.0667V45.044H0V0H5.26667V39.4135ZM52.5432 66.0704L43.2443 76.0117L52.5432 85.9971L48.8401 89.956L39.5 80.0147L30.1599 90L26.4568 85.9971L35.7969 76.0117L26.4568 66.0264L30.1599 62.0674L39.5 72.0528L48.8401 62.0674L52.5432 66.0704Z" fill="#2B3A67"/>
-                    </svg>
-
-                    <span className="block  mt-1" style={{ fontSize: "0.75rem" }}>Remove</span>
-                    <span className="block" style={{ fontSize: "0.75rem" }}>Columns▾</span>
-                </button>
-                {isDropdownOpen === "RemoveColumns-file" && (
-                    <ul className="absolute top-full  bg-white text-black shadow-lg  w-40 z-50 border border-gray-300">
-                    <li className="flex space-x-2 px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <svg className="px-2" width="39" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0.5" y="0.5" width="20" height="20" fill="#E3E3E3" stroke="black" />
-                        </svg>
-                        square
-                    </li>
-                    <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <img src="/circle.png" alt="circle" style={{ width: "38px", height: "auto" }} className="px-2 max-h-full object-contain" />
-                        circle
-                    </li>
-                    </ul>
-                )}
+            <DeleteColumnButton />
             </div>
-            
         </div>
         <p className="text-xs text-black">Manage Columns</p>
     </div>
@@ -362,32 +341,7 @@ const HomeTab = () => {
                 )}
             </div>
             <div className="relative inline-block" ref={RemoveRowsRef}>
-                <button
-                    className={`btn flex flex-col items-center ${isDropdownOpen === "RemoveRows-file" ? "bg-gray-200" : ""}`}
-                    onClick={() => toggleDropdown("RemoveRows-file")}
-                >
-                    <svg width="35" height="35" viewBox="0 0 97 97" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M72.75 90.9375H12.125C10.5171 90.9375 8.9751 90.2988 7.83816 89.1618C6.70123 88.0249 6.0625 86.4829 6.0625 84.875V66.6875C6.0625 65.0796 6.70123 63.5376 7.83816 62.4007C8.9751 61.2637 10.5171 60.625 12.125 60.625H72.75C74.3579 60.625 75.8999 61.2637 77.0368 62.4007C78.1738 63.5376 78.8125 65.0796 78.8125 66.6875V84.875C78.8125 86.4829 78.1738 88.0249 77.0368 89.1618C75.8999 90.2988 74.3579 90.9375 72.75 90.9375ZM12.125 66.6875H12.1189L12.125 84.875H72.75V66.6875H12.125ZM90.9375 10.3366L86.6634 6.0625L75.7812 16.9447L64.8991 6.0625L60.625 10.3366L71.5072 21.2188L60.625 32.1009L64.8991 36.375L75.7812 25.4928L86.6634 36.375L90.9375 32.1009L80.0553 21.2188L90.9375 10.3366Z" fill="#2B3A67"/>
-                    <path d="M12.125 42.4375V24.25H54.5625V18.1875H12.125C10.5171 18.1875 8.9751 18.8262 7.83816 19.9632C6.70123 21.1001 6.0625 22.6421 6.0625 24.25V42.4375C6.0625 44.0454 6.70123 45.5874 7.83816 46.7243C8.9751 47.8613 10.5171 48.5 12.125 48.5H78.8125V42.4375H12.125Z" fill="#2B3A67"/>
-                    </svg>
-
-                    <span className="block  mt-1" style={{ fontSize: "0.75rem" }}>Remove</span>
-                    <span className="block" style={{ fontSize: "0.75rem" }}>Rows▾</span>
-                </button>
-                {isDropdownOpen === "RemoveRows-file" && (
-                    <ul className="absolute top-full  bg-white text-black shadow-lg  w-40 z-50 border border-gray-300">
-                    <li className="flex space-x-2 px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <svg className="px-2" width="39" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0.5" y="0.5" width="20" height="20" fill="#E3E3E3" stroke="black" />
-                        </svg>
-                        square
-                    </li>
-                    <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <img src="/circle.png" alt="circle" style={{ width: "38px", height: "auto" }} className="px-2 max-h-full object-contain" />
-                        circle
-                    </li>
-                    </ul>
-                )}
+                <RemoveRowsButton />
             </div>
             
         </div>
@@ -457,17 +411,7 @@ const HomeTab = () => {
                 <span className="block" style={{ fontSize: "0.75rem" }}>By</span>
             </button>
             <div className="flex flex-col">
-              <div >
-                <button
-                    className="px-1 py-1 rounded hover:bg-gray-200 flex items-center"
-                >
-                    <select className="px-0 py-0 rounded" style={{ fontSize: "0.75rem" }}>
-                      <option>Data Type: Whole Numner</option>
-                      <option>Data Type: Manage</option>
-                    </select>
-                   
-                </button>
-              </div>
+            <ColumnTypeChanger />
               <div >
                 <button
                     className="px-1 py-1 rounded hover:bg-gray-200 flex items-center"
@@ -537,6 +481,7 @@ const HomeTab = () => {
                     <AppendModal onClose={() => setShowAppend(false)} mainData={mainData} />
                   )}
               </div> 
+              
               <div  >
                   <button
                       className="px-1 py-1 rounded hover:bg-gray-200 flex  items-center" 
