@@ -62,11 +62,11 @@ export default function TableViewer() {
                         title="คลิกเพื่อเลือกคอลัมน์นี้"
                       >
                         <div className="flex flex-col">
-  <span>{col}</span>
-  <span className="text-xs text-gray-300">
-    {mainData.columnTypes?.[col] || 'Unknown'}
-  </span>
-</div>
+                          <span>{col}</span>
+                          <span className="text-xs text-gray-300">
+                            {mainData.columnTypes?.[col] || 'Unknown'}
+                          </span>
+                        </div>
 
                       </th>
                     ))}
