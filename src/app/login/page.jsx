@@ -56,12 +56,24 @@ function Login() {
                 return; 
             }
 
-            router.replace("Homepage")
+                        
+                // ✅ ถ้า Login สำเร็จ ให้ดึง JWT จาก Session
+                const session = await fetch("/api/auth/session").then((res) => res.json());
 
-        } catch(error){
-            console.log(error);
-        }
-    }
+                if (session.user.jwt) {
+                    // ✅ เก็บ JWT Token ไว้ใน LocalStorage
+                    localStorage.setItem("token", session.user.jwt);
+
+                    // ✅ นำทางไปหน้า Homepage
+                    router.replace("/Homepage");
+                } else {
+                    setError("Login succeeded but JWT token not found.");
+                }
+
+                    } catch(error){
+                        console.log(error);
+                    }
+                }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-zinc-100" >

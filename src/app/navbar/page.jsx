@@ -6,13 +6,13 @@ import { Container, Navbar, Form, Nav} from 'react-bootstrap';
 import { useSession, signOut } from 'next-auth/react';
 
 
-const projects = [
-    { id: 1, name: "Project1" },
-    { id: 2, name: "Project2" },
-    { id: 3, name: "Project3" },
-  ];
+// const projects = [
+//     { id: 1, name: "Project1" },
+//     { id: 2, name: "Project2" },
+//     { id: 3, name: "Project3" },
+//   ];
 
-function Nav1() {
+function Nav1({ reports }) {
 
   const router = useRouter();
   const {data : session} = useSession();
@@ -21,9 +21,11 @@ function Nav1() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const filteredProjects = projects.filter((project) =>
-    project.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredReports = Array.isArray(reports)
+  ? reports.filter((report) =>
+      report.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  : [];
 
 return (
     <Navbar expand="lg"  className="bg-white py-3 mb-2 lg:h-18 z-20">
@@ -38,7 +40,7 @@ return (
                 </svg>
                 <Form.Control
                     type="search"
-                    placeholder="Search"
+                    placeholder="Search reports"
                     style={{
                       width: "500px",
                       height: "37px",
@@ -56,24 +58,25 @@ return (
                       setShowDropdown(e.target.value.length > 0);
                     }}
                 />
-                 {showDropdown && (
-                  <ul className="absolute bg-white border rounded shadow-lg w-full mt-1 z-10">
-                    {filteredProjects.length > 0 ? (
-                      filteredProjects.map((project) => (
-                        <li
-                          key={project.id}
-                          className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                          onClick={() => {
-                            setSearchTerm(project.name);
-                            setShowDropdown(false);
-                          }}
-                        >
-                          {project.name}
-                        </li>
-                      ))
-                    ) : (
-                      <li className="px-4 py-2 text-gray-500">No projects found.</li>
-                    )}
+                {showDropdown && (
+              <ul className="absolute bg-white border rounded shadow-lg w-full mt-1 z-10">
+                {filteredReports.length > 0 ? (
+                  filteredReports.map((report) => (
+                    <li
+                      key={report._id}
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => {
+                        setSearchTerm(report.title);
+                        setShowDropdown(false);
+                        router.push(`/Dashboard?id=${report._id}`);
+                      }}
+                    >
+                      {report.title}
+                    </li>
+                  ))
+                ) : (
+                  <li className="px-4 py-2 text-gray-500">No reports found.</li>
+                )}
                   </ul>
                 )}
               </Form>

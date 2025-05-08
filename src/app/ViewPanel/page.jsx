@@ -1,25 +1,33 @@
 import React, { useState } from "react";
 import CanvasArea from "../CanvasArea/page";
 
-const ViewPanel = () => {
+const ViewPanel = ({ zoomLevel, setZoomLevel, showGrid, setShowGrid, isLocked, setIsLocked }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const toggleDropdown = (dropdownId) => {
         setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
     };
 
-    const [zoomLevel, setZoomLevel] = useState(1);
+    // const [zoomLevel, setZoomLevel] = useState(1);
     const handleSelectChange = (e) => {
         setZoomLevel(parseFloat(e.target.value));
     };
 
-    const [checked1, setChecked1] = useState(false);
-    const [checked2, setChecked2] = useState(false);
+    // const [checked1, setChecked1] = useState(false);
+    // const [checked2, setChecked2] = useState(false);
+
+    const handleFitAll = () => {
+      setZoomLevel(0.75); // หรือคำนวณอัตโนมัติตามขนาดจริง
+    };
+
+    const handleFitWidth = () => {
+      setZoomLevel(1); // หรือคำนวณให้ width พอดีกับ container
+    };
 
     return(
         <div className="relative bg-[#F5F5F5]  h-[2.5rem] flex top-[7.25rem]">
 
                 {/* fit all */}
-                <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center text-sm"> 
+                <button onClick={handleFitAll} className="flex px-2 h-full hover:bg-[#E3E3E3] items-center text-sm"> 
                     <img 
                         src="/fit_all.png" alt="fit-all" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "
@@ -28,7 +36,7 @@ const ViewPanel = () => {
                 </button>
 
                 {/* fit width */}
-                <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm"> 
+                <button onClick={handleFitWidth} className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm"> 
                     <img 
                         src="/fit_width.png" alt="fit-width" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "
@@ -100,8 +108,8 @@ const ViewPanel = () => {
                     <label className="flex px-4 py-2 cursor-pointer items-center">
                     <input
                       type="checkbox"
-                      checked={checked1}
-                      onChange={() => setChecked1(!checked1)}
+                      checked={showGrid}
+                      onChange={() => setShowGrid(!showGrid)}
                       className=" cursor-pointer"
                     />
                       <span className="text-black px-2">Grid</span>
@@ -111,8 +119,8 @@ const ViewPanel = () => {
                     <label className="flex px-4 py-2 cursor-pointer items-center">
                     <input
                       type="checkbox"
-                      checked={checked2}
-                      onChange={() => setChecked2(!checked2)}
+                      checked={isLocked}
+                      onChange={() => setIsLocked(!isLocked)}
                       className="cursor-pointer"
                     />
                     <span className="text-black px-2">Lock</span>
@@ -120,7 +128,6 @@ const ViewPanel = () => {
                     </div>
                     )}
 
-                  {/* <CanvasArea showGrid={checked1} isLocked={checked2} /> */}
                 </div>
               </div>
     );
