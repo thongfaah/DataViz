@@ -4,15 +4,16 @@ import Sidebar from "../Sidebar/page";
 import Nav1 from "../navbar/page";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
-import TablePage from "../tablepage/page"; // Import TablePage
+import CsvTxtParser from "../CsvTxtParser/page";
 import { Rnd } from "react-rnd"; // Import Rnd
-
+import CsvTxtParser2 from "../CsvTxtParser2/page";
 
 const Create = () => {
   const centerPosition = () => ({
     x: (window.innerWidth - size.width) / 2,
     y: (window.innerHeight - size.height) / 2,
   });
+  const [fileContent, setFileContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false); // State for popup
   const [fileName, setFileName] = useState(""); // State for file name
@@ -26,37 +27,94 @@ const Create = () => {
   const handleProcessingClick = () => {
     router.push('/DataProcessing'); // เปลี่ยนเส้นทางไปยังหน้าที่ต้องการ
   };
-  const handleFileChange = async (event) => {
+  
+  const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-  
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("fileName", file.name); // ✅ ส่งชื่อไฟล์ไปให้ Backend
-  
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-  
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.error || "Upload failed");
-      }
-  
-      setFileName(file.name); // Set file name
-      setShowPopup(true); // Show popup
-      resetPosition(); // Reset position to center
-    } catch (error) {
-      console.error("Upload Error:", error);
-      alert("❌ อัปโหลดไฟล์ล้มเหลว!");
-    } finally {
-      setLoading(false);
-    }
-  };
 
+    // จำกัดขนาดไฟล์ (ตัวอย่าง: ไม่เกิน 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert("File size exceeds 5MB limit.");
+        return;
+    }
+
+    setFileName(file.name); // เก็บชื่อไฟล์
+    setShowPopup(true);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        let text = e.target.result;
+
+        // ลบ BOM (Byte Order Mark) ถ้ามี
+        if (text.charCodeAt(0) === 0xFEFF) {
+            text = text.slice(1);
+        }
+
+        // ✅ ตรวจสอบประเภทไฟล์ และตั้งค่า delimiter อัตโนมัติ
+        let delimiter = ",";
+        if (file.name.endsWith(".txt")) {
+            delimiter = "\t"; // TXT ใช้ tab เป็นค่าเริ่มต้น
+        }
+
+        setFileContent(text);
+        localStorage.setItem("uploadedFile", JSON.stringify({
+            name: file.name,
+            content: text,
+        }));
+        localStorage.setItem("delimiter", delimiter); // บันทึก delimiter
+    };
+
+    reader.readAsText(file, "UTF-8"); // ✅ ใช้ encoding UTF-8
+};
+
+
+  
+  
+const handleUploadToDB = async () => {
+  const savedFile = localStorage.getItem("uploadedFile");
+  const savedDelimiter = localStorage.getItem("delimiter");
+
+  if (!savedFile) {
+    alert("No file selected!");
+    return;
+  }
+
+  const { name, content } = JSON.parse(savedFile);
+  let delimiter = savedDelimiter?.trim() || "";
+
+  // ✅ ถ้าผู้ใช้เลือก delimiter เป็น "space" ให้เปลี่ยนเป็น " "
+  if (delimiter.toLowerCase() === "space") {
+      delimiter = " ";
+  }
+
+  try {
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: name,
+        fileContent: content,
+        delimiter,
+      }),
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      alert("Upload successful: " + result.message);
+    } else {
+      console.error("Upload Error:", result.details);
+      alert("Error: " + result.error);
+    }
+  } catch (error) {
+    console.error("Upload Error:", error);
+    alert("Failed to upload data");
+  }
+};
+
+
+  
+  
+  
   const toggleFullScreen = () => {
     if (isFullScreen) {
       setPosition(centerPosition());
@@ -103,7 +161,7 @@ const Create = () => {
               type="file"
               className="hidden"
               accept=".csv" 
-              onChange={handleFileChange}
+              onChange={handleFileUpload }
             />
             {loading && <p className="text-red-500 mt-4">Uploading...</p>}
           </div>
@@ -121,7 +179,7 @@ const Create = () => {
               type="file"
               className="hidden"
               accept=".txt" 
-              onChange={handleFileChange}
+              onChange={handleFileUpload }
             />
             {loading && <p className="text-red-500 mt-4">Uploading...</p>}
           </div>
@@ -169,15 +227,15 @@ const Create = () => {
               <button onClick={toggleFullScreen} className="absolute text-2xl text-gray-500 top-1 right-10">
                 {isFullScreen ? "🗗" : "▢"}
               </button>
-              <TablePage fileName={fileName} />
+              <CsvTxtParser2 fileContent={fileContent} delimiter={localStorage.getItem("delimiter") || ','} />
               <div className="absolute bottom-6 right-0 w-full flex flex-row justify-end bg-white space-x-4 px-8 py-2 ">
-                <button onClick={handleUploadClick} className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
+                <button onClick={handleUploadToDB}  className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
                   Upload
                 </button>
                 <button onClick={handleProcessingClick} className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
                   Processing Data
                 </button>
-                <button className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
+                <button onClick={() => { setShowPopup(false); resetPosition(); }} className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400">
                   Cancel
                 </button>
               </div>

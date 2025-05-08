@@ -12,17 +12,12 @@ export async function POST(req) {
 
     await connectMongoDB();
 
-    const formData = await req.formData();
-    const file = formData.get("file");
-    const fileName = formData.get("fileName");
+    const { fileName, fileContent, delimiter } = await req.json();
 
-    if (!file || !fileName) {
-      return NextResponse.json({ error: "No file or filename provided" }, { status: 400 });
+    if (!fileContent || !fileName) {
+      return NextResponse.json({ error: "No file content or filename provided" }, { status: 400 });
     }
 
-    const fileText = await file.text();
-
-    // ตรวจสอบว่าเป็น .csv หรือ .txt
     const isCSV = fileName.toLowerCase().endsWith(".csv");
     const isTXT = fileName.toLowerCase().endsWith(".txt");
 
@@ -33,19 +28,50 @@ export async function POST(req) {
     let columns = [];
     let rows = [];
 
-    const lines = fileText.trim().split("\n"); // แยกแต่ละบรรทัด
+    const lines = fileContent.trim().split("\n").filter(line => line.trim() !== "");
     if (lines.length > 1) {
-      // 🔥 รองรับทั้ง space และ comma
-      const detectDelimiter = (line) => (line.includes(",") ? "," : /\s+/);
-      
-      // ใช้บรรทัดแรกเพื่อกำหนด delimiter (สมมติว่าทั้งไฟล์ใช้ delimiter เดียวกัน)
-      const delimiter = detectDelimiter(lines[0]);
-      columns = lines[0].trim().split(delimiter); 
+      const detectDelimiter = (line) => {
+        if (delimiter === "auto") {
+          if (line.includes(",")) return ",";
+          if (line.includes("\t")) return "\t";
+          return /\s+/;
+        }
+        return delimiter;
+      };
 
+      const usedDelimiter = detectDelimiter(lines[0]);
+
+      // 1. สร้าง columns และ trim
+      columns = lines[0].trim().split(usedDelimiter).map(col => col.trim());
+
+      // 2. ลบค่าว่างออก
+      columns = columns.filter(col => col !== "");
+
+      // 3. ถ้าไม่มี column หลังล้าง → สร้างอัตโนมัติจาก sample row
+      if (columns.length === 0 && lines.length > 1) {
+        const sampleRow = lines[1].trim().split(usedDelimiter);
+        columns = sampleRow.map((_, index) => `column_${index + 1}`);
+      }
+
+      // 4. ยังไม่มี columns → ส่ง error กลับ
+      if (columns.length === 0) {
+        return NextResponse.json({ error: "Unable to detect columns from the file." }, { status: 400 });
+      }
+
+      // 5. สร้าง rows พร้อมเติม column อัตโนมัติถ้าข้อมูลเกิน
       rows = lines.slice(1).map((line) => {
-        const values = line.trim().split(delimiter); // แยกข้อมูลตาม delimiter
+        const values = line.trim().split(usedDelimiter);
+
+        while (values.length > columns.length) {
+          columns.push(`column_${columns.length + 1}`);
+        }
+
+        while (values.length < columns.length) {
+          values.push("");
+        }
+
         return columns.reduce((obj, col, index) => {
-          obj[col] = values[index] || ""; // ใส่ค่าให้แต่ละคอลัมน์
+          obj[col] = values[index];
           return obj;
         }, {});
       });
@@ -58,8 +84,8 @@ export async function POST(req) {
     const newFile = new File({
       // userId: session.user.id, 
       table_name: fileName,
-      columns: columns,
-      rows: rows,
+      columns,
+      rows,
     });
 
     await newFile.save();
