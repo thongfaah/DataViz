@@ -1,18 +1,73 @@
 "use client"
 
-import React, {useState} from 'react'
-import { useRouter } from 'next/navigation'
+import React, {useState, useEffect} from 'react'
+import { useRouter, useSearchParams  } from 'next/navigation'
 import { Container, Navbar, Form, Nav} from 'react-bootstrap';
 import { useSession, signOut } from 'next-auth/react';
 
 
 
-function DashNav() {
+function DashNav({reportName, setReportName }) {
 
   const router = useRouter();
-  const [name, setName] = useState("");
+  const searchParams = useSearchParams();
   const {data : session} = useSession();
   const [open, setOpen] = useState(false);
+  const [reportId, setReportId] = useState(null);
+
+  useEffect(() => {
+    const idFromParams = searchParams.get("id");
+    if (idFromParams) setReportId(idFromParams);
+  }, [searchParams]);
+  
+  useEffect(() => {
+    const fetchReportName = async () => {
+      if (!reportId) return;
+  
+      try {
+        const response = await fetch(`/api/getReport/${reportId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setReportName(data.title);
+        }
+      } catch (error) {
+        console.error("Error fetching report:", error);
+      }
+    };
+  
+    fetchReportName();
+  }, [reportId]);
+
+  // ✅ บันทึกการเปลี่ยนแปลงชื่อ Report
+  const handleNameChange = async (e) => {
+    const newName = e.target.value;
+    setReportName(newName); // อัปเดตขึ้น parent
+  
+    if (reportId) {
+      try {
+        const response = await fetch(`/api/getReport/${reportId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ title: newName }),
+        });
+  
+        if (!response.ok) throw new Error("Failed to rename report");
+      } catch (error) {
+        console.error("Error renaming report:", error);
+      }
+    }
+  };
+  
 
 return (
 
@@ -25,8 +80,9 @@ return (
                 id="name"
                 type="text"
                 placeholder="Report name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={reportName}
+                onChange={handleNameChange}
+                // onBlur={handleNameBlur}
                 className="w-30 p-2 h-10 mt-3 rounded-lg focus:outline-none focus:ring-2 text-gray-900"
             />
               </Nav>

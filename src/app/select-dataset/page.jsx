@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
+import { ChevronLeft } from "lucide-react";
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 
 // ลงทะเบียน module ที่จำเป็นสำหรับ Chart.js
@@ -11,6 +12,8 @@ export default function SelectDataset() {
   const [datasets, setDatasets] = useState([]);
   const [selectedDataset, setSelectedDataset] = useState("");
   const [chartData, setChartData] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
 
   // ดึงรายการชุดข้อมูลจาก API
   useEffect(() => {
@@ -24,41 +27,24 @@ export default function SelectDataset() {
     fetchDatasets();
   }, []);
 
-  // โหลดข้อมูลที่เลือกและแปลงเป็นรูปแบบที่ใช้กับ Chart.js
-  const handleDatasetChange = async (e) => {
-    const datasetId = e.target.value;
-    setSelectedDataset(datasetId);
+   const toggleFileVisibility = async (file) => {
+    setVisibleColumns((prev) => ({ ...prev, [file]: !prev[file] }));
 
-    if (datasetId) {
-      const res = await fetch(`/api/datasets/${datasetId}`);
-      const result = await res.json();
-      console.log("API Response:", result); // ✅ ตรวจสอบข้อมูล
+    if (!data[file]) {
+      try {
+        const res = await fetch(`/api/get-data?file=${file}`);
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Failed to fetch data");
 
-      if (res.ok && result.data.length > 0) {
-        const firstItem = result.data[0]; // ดึง Object แรกของข้อมูล
-        const keys = Object.keys(firstItem); // หาชื่อคีย์ทั้งหมด
-
-        if (keys.length < 2) {
-          console.error("Data format is incorrect.");
-          return;
-        }
-
-        const xKey = keys[0]; // ใช้คีย์แรกเป็นแกน X
-        const yKey = keys[1]; // ใช้คีย์ที่สองเป็นแกน Y
-
-        setChartData({
-          labels: result.data.map((item) => item[xKey]), // ✅ สร้าง labels อัตโนมัติ
-          datasets: [
-            {
-              label: `ค่าของ ${yKey}`,
-              data: result.data.map((item) => parseFloat(item[yKey]) || 0), // ✅ ใช้ yKey อัตโนมัติ
-              backgroundColor: "rgba(75, 192, 192, 0.6)",
-            },
-          ],
-        });
+        setData((prev) => ({ ...prev, [file]: result }));
+      } catch (error) {
+        console.error("Fetch Data Error:", error);
+        alert("❌ โหลดข้อมูลล้มเหลว!");
       }
     }
   };
+  
+  
 
   return (
     <div className="p-4">
@@ -90,6 +76,16 @@ export default function SelectDataset() {
           />
         </div>
       )}
+
+        {!isSidebarOpen && (
+          <button
+            className="fixed right-0  p-2 bg-gray-200 hover:bg-gray-300 rounded-l"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <ChevronLeft className="w-4 h-4"/>
+          </button>
+        )}
+
     </div>
   );
 }
