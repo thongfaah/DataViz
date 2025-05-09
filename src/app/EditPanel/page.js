@@ -18,10 +18,7 @@ const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSideb
     const router = useRouter();
     const handleApplyFilter = (filterData) => {
         console.log("Filter Applied: ", filterData);
-    
-        // 🔄 ตัวอย่าง Logic ที่จะส่งค่า filterData ไปยัง ChartBox
-        // สมมติว่าคุณมี Context หรือ Prop ที่เชื่อมกับ ChartBox:
-        // updateChartFilter(selectedChartId, filterData);
+        applyFilterToChart(filterData);
     };
 
     const centerPosition = () => ({
@@ -364,7 +361,9 @@ const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSideb
 
                 {/* Fillter */}
                 <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm"
-                onClick={() => setShowFilter(true)}>
+                // onApply={handleApplyFilter}
+                onClick={() => setShowFilter(true)} >
+                
                     <img 
                         src="/fillter.png" alt="Fillter" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "

@@ -62,18 +62,22 @@ const CanvasArea = forwardRef(({
     }
   };
 
-  const updateTextItem = (field, value) => {
-    setPages((prev) => {
-      const updated = [...prev];
-      updated[currentPage] = updated[currentPage].map((item) => {
-        if (selectedItemIds.length === 1 && item.id === selectedItemIds[0] && item.type === "text") {
-          return { ...item, [field]: value };
-        }
-        return item;
-      });
-      return updated;
+const updateTextItem = (field, value) => {
+  setPages((prev) => {
+    const updated = JSON.parse(JSON.stringify(prev));
+    updated[currentPage] = updated[currentPage].map((item) => {
+      if (selectedItemIds.length === 1 && item.id === selectedItemIds[0] && item.type === "text") {
+        console.log(`🔄 Updating ${field} with value: ${value}`);
+        item[field] = value; // ✅ แก้ไขตรงนี้เป็นแบบ Mutation
+      }
+      return item;
     });
-  };
+
+    console.log("📌 Updated Pages: ", updated[currentPage]);
+    saveState(updated); // ✅ บันทึก
+    return updated;
+  });
+};
 
   
   useEffect(() => {
@@ -171,6 +175,8 @@ const CanvasArea = forwardRef(({
       return updated;
     });
   };
+
+ 
   
 
   return (
@@ -216,6 +222,7 @@ const CanvasArea = forwardRef(({
           ) : (
             pageItems.map((item) => {
               if (item.type === "chartbox") {
+  
                 return (
                   <ChartBox
                     key={item.id}
@@ -246,9 +253,9 @@ const CanvasArea = forwardRef(({
                         }
                         
                         updated[currentPage] = updated[currentPage].map(el =>
-                          el.id === id ? { ...el, posX: x, posY: y } : el
+                          el.id === id ? { ...el, posX: x ?? 0, posY: y ?? 0 } : el
                         );
-                    
+
                         saveState(updated);
                         return updated;
                       });
@@ -275,53 +282,50 @@ const CanvasArea = forwardRef(({
               }
 
               if (item.type === "text") {
+                console.log("📌 Rendering TextBox with item: ", item);
                 return (
-                  <TextBox
-                    key={item.id}
-                    id={item.id}
-                    text={item.text}
-                    posX={item.posX}
-                    posY={item.posY}
-                    width={item.width || 200}
-                    height={item.height || 100}
-                    isSelected={selectedItemIds.includes(item.id)}
-                    onSelect={() => setSelectedItemIds([item.id])}
-                    onChange={(newText) => handleTextChange(item.id, newText)}
-                    onDelete={() => handleDelete(item.id)}
-                    onUpdatePosition={(id, x, y) => {
-                      setPages((prev) => {
-                        const updated = JSON.parse(JSON.stringify(prev));
-                        if (!updated[currentPage]) {
-                          updated[currentPage] = [];
-                        }
-                        
-                        updated[currentPage] = updated[currentPage].map(el =>
-                          el.id === id ? { ...el, posX: x, posY: y } : el
-                        );
-                    
-                        saveState(updated);
-                        return updated;
-                      });
-                    }}
-                    
-                    onUpdateSize={(id, width, height) => {
-                      setPages((prev) => {
-                        const updated = JSON.parse(JSON.stringify(prev));
-                        if (!updated[currentPage]) {
-                          updated[currentPage] = [];
-                        }
-                    
-                        updated[currentPage] = updated[currentPage].map(el =>
-                          el.id === id ? { ...el, width, height } : el
-                        );
-                    
-                        saveState(updated);
-                        return updated;
-                      });
-                    }}
-                    
-                    style={item.style}
-                  />
+                   <TextBox
+      key={item.id}
+      id={item.id}
+      text={item.text}
+      posX={item.posX}
+      posY={item.posY}
+      width={item.width || 200}
+      height={item.height || 100}
+      isSelected={selectedItemIds.includes(item.id)}
+      onSelect={() => setSelectedItemIds([item.id])}
+      onChange={(newText) => handleTextChange(item.id, newText)}
+      onDelete={() => handleDelete(item.id)}
+      onUpdatePosition={(x, y) => {
+        setPages((prev) => {
+          const updated = JSON.parse(JSON.stringify(prev));
+          if (!updated[currentPage]) {
+            updated[currentPage] = [];
+          }
+          
+          updated[currentPage] = updated[currentPage].map(el =>
+            el.id === item.id ? { ...el, posX: x ?? 0, posY: y ?? 0 } : el
+          );
+          
+          saveState(updated);
+          return updated;
+        });
+      }}
+      onUpdateSize={(id, width, height) => {
+        setPages((prev) => {
+          const updated = JSON.parse(JSON.stringify(prev));
+          if (!updated[currentPage]) {
+            updated[currentPage] = [];
+          }
+          updated[currentPage] = updated[currentPage].map(el =>
+            el.id === id ? { ...el, width, height } : el
+          );
+          saveState(updated);
+          return updated;
+        });
+      }}
+      style={{ ...item }} // ✅ ต้องส่งเป็น Spread Object
+    />
                 );
               }
 
@@ -536,19 +540,71 @@ const CanvasArea = forwardRef(({
 
       {selectedTextItem && (
         <SidebarText
-          size={selectedTextItem.size || "20"} setSize={(v) => updateTextItem("size", v)}
-          font={selectedTextItem.font || "Arial"} setFont={(v) => updateTextItem("font", v)}
-          color={selectedTextItem.color || "#000000"} setColor={(v) => updateTextItem("color", v)}
-          fade={selectedTextItem.fade || "100%"} setFade={(v) => updateTextItem("fade", v)}
-          isBold={selectedTextItem.isBold || false} setIsBold={(v) => updateTextItem("isBold", v)}
-          isItalic={selectedTextItem.isItalic || false} setIsItalic={(v) => updateTextItem("isItalic", v)}
-          isUnderline={selectedTextItem.isUnderline || false} setIsUnderline={(v) => updateTextItem("isUnderline", v)}
-          textAlign={selectedTextItem.textAlign || "left"} setTextAlign={(v) => updateTextItem("textAlign", v)}
-          backgroundColor={selectedTextItem.backgroundColor || "#ffffff"} setBackgroundColor={(v) => updateTextItem("backgroundColor", v)}
-          borderColor={selectedTextItem.borderColor || "#000000"} setBorderColor={(v) => updateTextItem("borderColor", v)}
-          borderRadius={selectedTextItem.borderRadius || "0"} setBorderRadius={(v) => updateTextItem("borderRadius", v)}
-          borderWeight={selectedTextItem.borderWeight || "1"} setBorderWeight={(v) => updateTextItem("borderWeight", v)}
-          borderStyle={selectedTextItem.borderStyle || "Solid"} setBorderStyle={(v) => updateTextItem("borderStyle", v)}
+          size={selectedTextItem.size || "20"} 
+          setSize={(v) => {
+            updateTextItem("size", v);
+            saveState(pages); // ✅ บันทึกสถานะ
+          }}
+          font={selectedTextItem.font || "Arial"} 
+          setFont={(v) => {
+            updateTextItem("font", v);
+            saveState(pages);
+          }}
+          color={selectedTextItem.color || "#000000"} 
+          setColor={(v) => {
+            updateTextItem("color", v);
+            saveState(pages);
+          }}
+          fade={selectedTextItem.fade || "100%"} 
+          setFade={(v) => {
+            updateTextItem("fade", v);
+            saveState(pages);
+          }}
+          isBold={selectedTextItem.isBold || false} 
+          setIsBold={(v) => {
+            updateTextItem("isBold", v);
+            saveState(pages);
+          }}
+          isItalic={selectedTextItem.isItalic || false} 
+          setIsItalic={(v) => {
+            updateTextItem("isItalic", v);
+            saveState(pages);
+          }}
+          isUnderline={selectedTextItem.isUnderline || false} 
+          setIsUnderline={(v) => {
+            updateTextItem("isUnderline", v);
+            saveState(pages);
+          }}
+          textAlign={selectedTextItem.textAlign || "left"} 
+          setTextAlign={(v) => {
+            updateTextItem("textAlign", v);
+            saveState(pages);
+          }}
+          backgroundColor={selectedTextItem.backgroundColor || "#ffffff"} 
+          setBackgroundColor={(v) => {
+            updateTextItem("backgroundColor", v);
+            saveState(pages);
+          }}
+          borderColor={selectedTextItem.borderColor || "#000000"} 
+          setBorderColor={(v) => {
+            updateTextItem("borderColor", v);
+            saveState(pages);
+          }}
+          borderRadius={selectedTextItem.borderRadius || "0"} 
+          setBorderRadius={(v) => {
+            updateTextItem("borderRadius", v);
+            saveState(pages);
+          }}
+          borderWeight={selectedTextItem.borderWeight || "1"} 
+          setBorderWeight={(v) => {
+            updateTextItem("borderWeight", v);
+            saveState(pages);
+          }}
+          borderStyle={selectedTextItem.borderStyle || "Solid"} 
+          setBorderStyle={(v) => {
+            updateTextItem("borderStyle", v);
+            saveState(pages);
+          }}
         />
       )}
 
