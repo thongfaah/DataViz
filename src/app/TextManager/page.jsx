@@ -502,14 +502,21 @@ const TextBox = ({
 
   // ลบ text เมื่อกด Delete
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isSelected && e.key === "Delete") {
-        onDelete();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isSelected, onDelete]);
+  const handleKeyDown = (e) => {
+    // ✅ ตรวจสอบว่า Focus อยู่ใน `textarea` หรือไม่
+    if (document.activeElement.tagName === "TEXTAREA") return;
+
+    // ✅ ตรวจสอบว่าเป็นปุ่ม Delete หรือ Backspace
+    if (isSelected && (e.key === "Delete" || e.key === "Backspace")) {
+      e.preventDefault(); // ✅ ป้องกันไม่ให้มันส่งต่อ
+      onDelete();
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [isSelected, onDelete]);
+
 
   return (
     <Rnd

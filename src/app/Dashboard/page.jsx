@@ -46,7 +46,7 @@ const App = () => {
   const pageItems = pages[currentPage] || [];
 
 
-  // ✅ 2️⃣ สร้าง Report ใหม่ถ้าไม่พบ reportId
+  // สร้าง Report ใหม่ถ้าไม่พบ reportId
   useEffect(() => {
     const createReport = async () => {
       if (!session || reportId) return;
@@ -291,12 +291,20 @@ useEffect(() => {
   };
 
   const handleTextChange = (id, newText) => {
-    setPages((prev) => {
-      const updated = [...prev];
-      updated[currentPage] = updated[currentPage].map(el => el.id === id ? { ...el, text: newText } : el);
-      return updated;
-    });
-  };
+  setPages((prev) => {
+    const updated = JSON.parse(JSON.stringify(prev));
+    if (!updated[currentPage]) {
+      updated[currentPage] = [];
+    }
+
+    updated[currentPage] = updated[currentPage].map(el => 
+      el.id === id ? { ...el, text: newText ?? "" } : el
+    );
+    
+    saveState(updated); // บันทึกการเปลี่ยนแปลง
+    return updated;
+  });
+};
 
   const handleDelete = (id) => {
     setPages((prev) => {
@@ -660,7 +668,8 @@ return (
         onDelete={handleDelete}
         onSelectAll={handleSelectAll} 
         saveState={saveState}
-        setSelectedChartId={setSelectedChartId}         
+        setSelectedChartId={setSelectedChartId} 
+              
       />
       
     </div>
