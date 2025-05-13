@@ -3,6 +3,7 @@ import { useMainData } from "../MainDataContext/page";
 import ColumnFormatMenu from "../componentsDPfeature/ColumnFormatMenu";
 import AddColumnModal from "../componentsDPfeature/AddColumnModal";
 import AddBlankColumn from "../componentsDPfeature/AddBlankColumn";
+import dynamic from 'next/dynamic';
 
 
 const AddColumnTab = () => {
@@ -12,6 +13,7 @@ const AddColumnTab = () => {
   const { mainData, setMainData } = useMainData();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isModalOpen2, setIsModalOpen2] = useState(false);
+  const PivotTable = dynamic(() => import("../componentsDPfeature/PivotTable"), { ssr: false });
   const toggleDropdown = (dropdownId) => {
     setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
   };
@@ -90,7 +92,7 @@ const AddColumnTab = () => {
                 </button>
                 <AddColumnModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
             </div>
-            
+            <PivotTable />
         </div>
         <p className="text-xs text-black">General</p>
     </div>

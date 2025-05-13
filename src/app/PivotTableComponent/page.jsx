@@ -1,19 +1,26 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import 'webdatarocks/webdatarocks.css';
+import 'webdatarocks/webdatarocks.css'; // default CSS
 
 const PivotTableComponent = () => {
   const pivotRef = useRef(null);
 
   useEffect(() => {
+    // Load theme CSS
+    const themeLink = document.createElement('link');
+    themeLink.rel = 'stylesheet';
+    themeLink.href = 'https://cdn.webdatarocks.com/latest/theme/blue/webdatarocks.min.css';
+    document.head.appendChild(themeLink);
+
+    // Load WebDataRocks script
     const script = document.createElement('script');
     script.src = 'https://cdn.webdatarocks.com/latest/webdatarocks.js';
     script.onload = () => {
-      // eslint-disable-next-line no-undef
       const pivot = new window.WebDataRocks({
         container: "#pivot-container",
         toolbar: true,
         height: 500,
+        theme: "blue",
       });
       pivotRef.current = pivot;
     };
