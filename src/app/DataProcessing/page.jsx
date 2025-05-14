@@ -7,9 +7,6 @@ export default function Page() {
     <MainDataProvider>
       <Ribbon />
       <TableViewer />
-      <main className="p-4">
-        {/* เนื้อหาเว็บไซต์ */}
-      </main>
     </MainDataProvider>
   );
 }

@@ -4,11 +4,11 @@ import { useMainData } from "../MainDataContext/page";
 import DeleteColumnButton from "../componentsDPfeature/DeleteColumnButton";
 import RemoveRowsButton from "../componentsDPfeature/RemoveRowsButton";
 import ColumnTypeChanger from "../componentsDPfeature/ColumnTypeChanger";
-
+import MergeUI from "../MergeUI/page";
 
 const HomeTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const newSourcesRef = useRef(null);
   const recentSourcesRef = useRef(null);
   const ManageParametersRef = useRef(null);
@@ -123,6 +123,7 @@ const HomeTab = () => {
                     </ul>
                 )}
             </div>
+            
             <button
                 className="btn flex flex-col items-center "
             >
@@ -441,31 +442,32 @@ const HomeTab = () => {
     </div>
     <div className="flex flex-col items-center border-l pl-4">
         <div className="flex space-x-2 ">
-            
+            {/*<div className="p-4">
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        เปิด Merge Table
+      </button>
+
+      <MergeUI
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </div> */}
             <div className="flex flex-col">
-              <div className="relative " ref={MergeQueriesRef}>
-                <button
-                    className={`px-1 py-1 rounded hover:bg-gray-200 flex items-center ${isDropdownOpen === "MergeQueries-file" ? "bg-gray-200" : ""}`}
-                    onClick={() => toggleDropdown("MergeQueries-file")}
-                >
-                    <img src="/MergeQueries.png" alt="GroupBy" width={22} height={22} />
-                    <span className="ml-2" style={{ fontSize: "0.75rem" }}>Merge Queries▾</span>
-                   
-                </button>
-                {isDropdownOpen === "MergeQueries-file" && (
-                    <ul className="absolute top-full  bg-white text-black shadow-lg  w-40 z-50 border border-gray-300">
-                    <li className="flex space-x-2 px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <svg className="px-2" width="39" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0.5" y="0.5" width="20" height="20" fill="#E3E3E3" stroke="black" />
-                        </svg>
-                        square
-                    </li>
-                    <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <img src="/circle.png" alt="circle" style={{ width: "38px", height: "auto" }} className="px-2 max-h-full object-contain" />
-                        circle
-                    </li>
-                    </ul>
-                )}
+              <div  >
+                  <button
+                      className="px-1 py-1 rounded hover:bg-gray-200 flex items-center" 
+                     onClick={() => setIsModalOpen(true)}
+                  >
+                      <img src="/MergeQueries.png" alt="GroupBy" width={22} height={22} />
+                    <span className="ml-2" style={{ fontSize: "0.75rem" }}>Merge Queries</span>
+                  </button>
+                  <MergeUI
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                    />
               </div>
               <div  >
                   <button
