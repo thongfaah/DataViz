@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from 'next/navigation'
 import Sidebar from "../Sidebar/page";
 import Link from "next/link";
 import Nav1 from "../navbar/page";
@@ -9,6 +10,7 @@ import Nav1 from "../navbar/page";
 function Homepage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
   const { data: session } = useSession();
 
   // 📝 ฟังก์ชันดึงข้อมูลจาก API
@@ -41,6 +43,15 @@ function Homepage() {
     fetchReports();
   }, [session]);
 
+  // ฟังก์ชันจัดการเมื่อคลิกที่ Report
+   const handleClick = (report) => {
+    // 🕰️ บันทึกเวลาเข้าถึงล่าสุด
+    const now = new Date().toLocaleString();
+    localStorage.setItem(`lastAccessedAt_${report._id}`, now);
+
+    // 🔄 Redirect ไปที่ Dashboard
+    router.push(`/Dashboard?id=${report._id}`);
+  };
   return (
     <div className="fixed top-0 left-0 w-full z-50">
       <Nav1 reports={reports}/>
@@ -62,14 +73,14 @@ function Homepage() {
               </p>
             ) : (
               reports.map((report) => (
-                <Link href={`/Dashboard?id=${report._id}`} key={report._id}>
+                <Link href={`/Dashboard?id=${report._id}`} key={report._id} onClick={() => handleClick(report)}>
                   <div className="w-60 h-60 bg-white border border-gray-300 rounded shadow-md p-4 hover:bg-gray-100 cursor-pointer">
                     <h2 className="text-lg font-semibold text-[#2B3A67] truncate">
                       {report.title}
                     </h2>
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                    {/* <p className="text-sm text-gray-600 mt-2 line-clamp-2">
                       {report.description || "No description"}
-                    </p>
+                    </p> */}
                     <p className="text-xs text-gray-400 mt-4">
                       {new Date(report.createdAt).toLocaleDateString()}
                     </p>

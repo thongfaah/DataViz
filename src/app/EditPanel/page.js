@@ -5,7 +5,10 @@ import Papa from "papaparse";
 import { useRouter } from "next/navigation";
 import FilterSidebar from "../FilterSidebar/page";
 
-const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSidebar, onUndo, onRedo }) => {
+const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSidebar, onUndo, onRedo, data, selectedFile, pageItems,
+    setPages,          // ✅ เพิ่มตัวรับ setPages
+    pages,             // ✅ เพิ่มตัวรับ pages
+    currentPage , selectedColumns }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [showFileMenu, setShowFileMenu] = useState(false);
     const fileInputRef = useRef(null);
@@ -14,12 +17,121 @@ const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSideb
     const [size, setSize] = useState({ width: 1000, height: 700 });
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showFilter, setShowFilter] = useState(false); // เพิ่มการประกาศ State
-    
-    const router = useRouter();
-    const handleApplyFilter = (filterData) => {
-        console.log("Filter Applied: ", filterData);
-        applyFilterToChart(filterData);
+     const [columns, setColumns] = useState([]);
+     const [filteredData, setFilteredData] = useState(null);
+
+    // ✅ เมื่อ selectedFile เปลี่ยน ให้ดึงข้อมูลและอัปเดตคอลัมน์
+ useEffect(() => {
+        if (selectedFile && data[selectedFile]) {
+            console.log("✅ Data from file: ", data[selectedFile]);
+
+            if (data[selectedFile].columns && data[selectedFile].rows) {
+                const headers = data[selectedFile].columns;
+                const rows = data[selectedFile].rows;
+
+                console.log("✅ Headers: ", headers);
+                console.log("✅ Rows: ", rows);
+
+                setColumns(headers);
+                setPages((prev) => {
+                    const updated = [...prev];
+                    updated[currentPage] = rows;
+                    localStorage.setItem("dashboard_pages", JSON.stringify(updated)); // ✅ บันทึกลง LocalStorage
+                    return updated;
+                });
+            } else {
+                console.error("Data structure is incorrect.");
+            }
+        }
+    }, [selectedFile, data]);
+
+    const forceUpdate = () => {
+        setPages((prev) => [...prev]);
     };
+
+const handleApplyFilter = (filterData) => {
+    console.log("Filter Applied: ", filterData);
+
+    const originalItems = data[selectedFile]?.rows || [];
+    if (!Array.isArray(originalItems)) {
+        console.error("❌ [EditPanel] Data is not an array", originalItems);
+        return;
+    }
+
+    const filteredItems = originalItems.filter((item) => {
+        return filterData.every(({ column, operator, value }) => {
+            if (operator === 'Equals') {
+                return item[column.trim()] == value.trim();
+            } else if (operator === 'Greater Than') {
+                return parseFloat(item[column.trim()]) > parseFloat(value.trim());
+            } else if (operator === 'Less Than') {
+                return parseFloat(item[column.trim()]) < parseFloat(value.trim());
+            } else if (operator === 'Contains') {
+                return item[column.trim()]?.includes(value.trim());
+            }
+            return true;
+        });
+    });
+
+    console.log("✅ [EditPanel] Filtered Items: ", filteredItems);
+
+    const headers = selectedColumns[selectedFile];
+    const filteredData = { [selectedFile]: { rows: filteredItems, columns: headers }};
+
+    // ส่ง event ออกไปให้ CanvasArea รู้
+    window.dispatchEvent(new CustomEvent("filter-updated", { detail: filteredData }));
+};
+
+    const handleClearFilter = () => {
+  console.log("🧹 [EditPanel] Clear Filter");
+
+  // ✅ ดึงข้อมูลทั้งหมดจาก LocalStorage กลับมา
+  const originalData = JSON.parse(localStorage.getItem("dashboard_pages"));
+  
+  if (originalData && originalData[selectedFile]) {
+    console.log("✅ [EditPanel] Restoring Original Data:", originalData[selectedFile]);
+
+    // ✅ รีเซ็ตข้อมูลกลับไปที่ CanvasArea และ TableView
+    setFilteredData(null);
+    setPages((prev) => {
+      const updated = [...prev];
+      updated[currentPage] = originalData[selectedFile];
+      return updated;
+    });
+  } else {
+    console.warn("⚠️ [EditPanel] No Original Data Found in LocalStorage");
+  }
+};
+
+
+
+
+      // ✅ โหลดข้อมูลที่กรองกลับมาเมื่อเปิด Filter
+    useEffect(() => {
+    if (showFilter) {
+        console.log("📌 Switched to Filter Mode");
+        const savedFilteredPages = localStorage.getItem("dashboard_pages_filtered");
+        if (savedFilteredPages) {
+            const parsedPages = JSON.parse(savedFilteredPages);
+            console.log("✅ Pages loaded from LocalStorage (Filtered): ", parsedPages);
+
+            // ✅ ถ้ามี Filtered Data ให้อัปเดต State
+            setFilteredData(parsedPages);
+        } else {
+            console.warn("⚠️ No filtered data found in LocalStorage.");
+        }
+    }
+    }, [showFilter, currentPage]);
+
+     // ✅ Clear Filter เมื่อเปลี่ยนหน้า
+    useEffect(() => {
+        if (!showFilter) {
+            const originalPages = localStorage.getItem("dashboard_pages");
+            if (originalPages) {
+                setPages(JSON.parse(originalPages));
+            }
+        }
+    }, [showFilter]);
 
     const centerPosition = () => ({
         x: (window.innerWidth - size.width) / 2,
@@ -82,6 +194,8 @@ const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSideb
           alert("❌ อัปโหลดไฟล์ล้มเหลว!");
         }
       };
+
+      
       
     return (
     
@@ -375,6 +489,8 @@ const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSideb
                     <FilterSidebar
                         onClose={() => setShowFilter(false)}
                         onApply={handleApplyFilter}
+                        columns={columns} 
+                        // onClear={handleClearFilter} 
                     />
                 )}
 

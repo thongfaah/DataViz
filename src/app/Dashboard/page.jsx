@@ -26,6 +26,7 @@ const App = () => {
   const [report, setReport] = useState(null);
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
+  const [filteredData, setFilteredData] = useState(null);
 
   // Shared state for data
   const [files, setFiles] = useState([]);
@@ -45,6 +46,39 @@ const App = () => {
   const canvasRef = useRef(null);
   const pageItems = pages[currentPage] || [];
 
+  useEffect(() => {
+  if (selectedFile) {
+    localStorage.setItem("dashboard_selectedFile", selectedFile);
+  }
+  if (selectedColumns && Object.keys(selectedColumns).length > 0) {
+    localStorage.setItem("dashboard_selectedColumns", JSON.stringify(selectedColumns));
+  } else {
+    localStorage.removeItem("dashboard_selectedColumns");
+  }
+}, [selectedFile, selectedColumns]);
+
+  // ดึงข้อมูล selectedFile และ selectedColumns กลับมาเมื่อเปิดหน้าใหม่
+const hasLoaded = useRef(false);
+
+useEffect(() => {
+  if (!hasLoaded.current) {
+    const storedFile = localStorage.getItem("dashboard_selectedFile");
+    const storedColumns = localStorage.getItem("dashboard_selectedColumns");
+
+    if (storedFile) {
+      console.log("✅ [Dashboard] Loaded selectedFile from LocalStorage:", storedFile);
+      setSelectedFile(storedFile); 
+    }
+
+    if (storedColumns) {
+      console.log("✅ [Dashboard] Loaded selectedColumns from LocalStorage:", JSON.parse(storedColumns));
+      setSelectedColumns(JSON.parse(storedColumns));
+    }
+
+    // ✅ ป้องกันไม่ให้ useEffect ทำงานซ้ำ
+    hasLoaded.current = true;
+  }
+}, []);
 
   // สร้าง Report ใหม่ถ้าไม่พบ reportId
   useEffect(() => {
@@ -96,36 +130,37 @@ const App = () => {
   }, [reportId]);
 
   useEffect(() => {
-    const fetchReport = async () => {
-      if (!reportId) return;
+  const fetchReport = async () => {
+    if (!reportId) return;
 
-      try {
-        const res = await fetch(`/api/getReport/${reportId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-          },
-        });
+    try {
+      const res = await fetch(`/api/getReport/${reportId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+      });
 
-        if (res.ok) {
-          const data = await res.json();
-          setReport(data);
-          if (data.content.length > 0) {
-            setPages(data.content); // ✅ โหลด content ที่เคยบันทึกไว้
-          }
-        } else {
-          console.error("❌ Error fetching report:", res.status);
+      if (res.ok) {
+        const data = await res.json();
+        setReport(data);
+        if (data.content.length > 0) {
+          setPages(data.content); // ✅ โหลด content ที่เคยบันทึกไว้
         }
-      } catch (error) {
-        console.error("❌ Failed to fetch report:", error.message);
-      } finally {
-        setLoading(false);
+      } else {
+        console.error("❌ Error fetching report:", res.status);
       }
-    };
+    } catch (error) {
+      console.error("❌ Failed to fetch report:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchReport();
-  }, [reportId]);
+  fetchReport();
+}, [reportId]);
+
 
   useEffect(() => {
     if (!reportId) {
@@ -201,7 +236,7 @@ useEffect(() => {
   }
   
   setUndoStack((prev) => [...prev, JSON.parse(JSON.stringify(pages))]);
-  setPages(newPages);
+  setPages(newPages);  // ⛔️ ถ้า `newPages` ทำการ Render ใหม่ ก็จะเกิด Loop
   setRedoStack([]);
   localStorage.setItem("dashboard_pages", JSON.stringify(newPages));
   
@@ -221,6 +256,19 @@ useEffect(() => {
     console.error("❌ Failed to save state:", error);
   }
 };
+
+useEffect(() => {
+  const storedData = localStorage.getItem(`dashboard_pages`);
+  if (storedData) {
+    const parsedData = JSON.parse(storedData);
+    setPages(parsedData);
+    console.log("✅ Loaded pages from LocalStorage: ", parsedData);
+  } else {
+    console.log("🚫 No stored data found for this report.");
+  }
+}, []);
+
+
 
   // ✅ ฟังก์ชัน Add Item
   const addItem = (item) => {
@@ -577,8 +625,31 @@ const handleSelectAll = () => {
   setSelectedItemIds(allIds);
 };
 
+useEffect(() => {
+  if (activePanel === "edit") {
+    console.log("📌 Switched to Edit Panel");
+
+    const savedPages = localStorage.getItem("dashboard_pages");
+    if (savedPages) {
+      const parsedPages = JSON.parse(savedPages);
+      setPages(parsedPages);
+      console.log("✅ Loaded pages from LocalStorage: ", parsedPages[currentPage]);
+    } else {
+      console.warn("⚠️ No data found in LocalStorage.");
+    }
+  }
+}, [activePanel, currentPage]);
+
 return (
-    <div className="ml-[5.5rem]">
+    <div  
+      className="ml-[5.5rem] h-[100vh] overflow-hidden flex flex-col"
+      style={{
+        maxHeight: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       
       <Toolbar
         activePanel={activePanel}
@@ -598,6 +669,7 @@ return (
         reportName={reportName}
         setReportName={setReportName}
         selectedChartId={selectedChartId}
+        
       />
 
       {activePanel === "edit" && 
@@ -610,7 +682,15 @@ return (
         refreshSidebar={refreshSidebar}
         onUndo={handleUndo}
         onRedo={handleRedo} 
-    />}
+        data={data}
+        selectedFile={selectedFile}
+        pageItems={pages[currentPage] || []} 
+        setPages={setPages}                    // ✅ ส่ง setPages มาด้วย
+        pages={pages}                          // ✅ ส่ง pages มาด้วย
+        currentPage={currentPage}
+        selectedColumns={selectedColumns}  
+    />
+    }
       {activePanel === "insert" && 
         <InsertPanel 
           addTable={addTable} 
@@ -637,7 +717,12 @@ return (
         />}
       {activePanel === "view" && <ViewPanel {...{ zoomLevel, setZoomLevel, showGrid, setShowGrid, isLocked, setIsLocked }} />}
 
-      <SidebarData {...{ files, selectedFile, setSelectedFile, data, selectedColumns, visibleColumns, toggleFileVisibility, toggleColumn, isSidebarOpen, setIsSidebarOpen }} />
+      <SidebarData {...{ files, selectedFile, setSelectedFile, data, selectedColumns, visibleColumns, toggleFileVisibility, toggleColumn, isSidebarOpen, setIsSidebarOpen }}
+       style={{
+    height: 'calc(100vh - 64px)',
+    overflowY: 'auto', // ให้เลื่อนเฉพาะส่วน Data
+  }}
+   />
 
       
       <CanvasArea
@@ -669,7 +754,12 @@ return (
         onSelectAll={handleSelectAll} 
         saveState={saveState}
         setSelectedChartId={setSelectedChartId} 
-              
+        filteredData={filteredData} 
+        setFilteredData={setFilteredData}   
+        style={{
+          height: 'calc(100vh - 64px)', // 64px คือ Toolbar
+          overflow: 'hidden'
+        }}  
       />
       
     </div>

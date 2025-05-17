@@ -16,50 +16,49 @@ const Project = () => {
   const [error, setError] = useState(null);
   const [accessedTimes, setAccessedTimes] = useState({});
     
-   useEffect(() => {
-        const fetchReports = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const res = await fetch('/api/getReport', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`
-                    }
-                });
+ useEffect(() => {
+    const fetchReports = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/getReport', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-                if (res.ok) {
-                    const data = await res.json();
-                    const sortedReports = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
-                    setReports(sortedReports);
+        if (res.ok) {
+          const data = await res.json();
+          const sortedReports = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setReports(sortedReports);
 
-                    // โหลดเวลาเข้าถึงจาก localStorage เมื่อโหลดรายงาน
-                    const initialAccessedTimes = {};
-                    sortedReports.forEach(report => {
-                        const storedTime = localStorage.getItem(`lastAccessedAt_${report._id}`);
-                        if (storedTime) {
-                            initialAccessedTimes[report._id] = storedTime;
-                        }
-                    });
-                    setAccessedTimes(initialAccessedTimes);
-                    console.log("useEffect: initialAccessedTimes", initialAccessedTimes);
-                    console.log("useEffect: setAccessedTimes", accessedTimes);
-                } else {
-                    console.error("Failed to fetch reports");
-                    setError("Failed to fetch reports");
-                }
-            } catch (error) {
-                console.error("Error fetching reports:", error);
-                setError("Error fetching reports");
-            } finally {
-                setLoading(false);
+          // ✅ โหลดเวลาเข้าถึงจาก LocalStorage
+          const initialAccessedTimes = {};
+          sortedReports.forEach(report => {
+            const storedTime = localStorage.getItem(`lastAccessedAt_${report._id}`);
+            if (storedTime) {
+              initialAccessedTimes[report._id] = storedTime;
             }
-        };
+          });
+          setAccessedTimes(initialAccessedTimes);
 
-        fetchReports();
-    }, []);
+        } else {
+          console.error("Failed to fetch reports");
+          setError("Failed to fetch reports");
+        }
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+        setError("Error fetching reports");
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchReports();
+  }, []);
+  
     const handleClick = (report) => {
         // บันทึกเวลาเข้าถึงล่าสุดใน Local Storage และ state
         const now = new Date().toLocaleString();
@@ -230,7 +229,7 @@ const Project = () => {
                                         </Link>
                                     </div>
                                     <span className="text-sm text-[#1E1E1E] ">
-                                        {displayTime}
+                                        {accessedTimes[report._id] || '-'}
                                     </span>
                                 </li>
                             );
