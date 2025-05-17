@@ -34,9 +34,12 @@ const CanvasArea = forwardRef(({
   onDelete,
   onSelectAll,
   setSelectedChartId,
+  filteredData,
+  setFilteredData
 }, ref) => {
   
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
+
  
   const selectedTextItem = pageItems.find(item =>
     selectedItemIds.length === 1 && item.id === selectedItemIds[0] && item.type === "text"
@@ -157,24 +160,70 @@ const updateTextItem = (field, value) => {
   };
 
   const updateChartData = (id, newData) => {
-    console.log("📌 [CanvasArea] Update Chart Data for ID:", id);
-    console.log("📌 [CanvasArea] New Data Received:", newData);
-
-    if (!Array.isArray(newData) || newData.length === 0) {
-      console.error("❌ ข้อมูลที่ส่งมาไม่ถูกต้อง ไม่สามารถเขียนกลับไปที่ pages ได้");
-      return;
-    }
-
     setPages((prev) => {
       const updated = JSON.parse(JSON.stringify(prev));
       updated[currentPage] = updated[currentPage].map(item =>
         item.id === id ? { ...item, chartData: newData } : item
       );
 
+      // ✅ บันทึก chartData ลง LocalStorage ด้วย
+      localStorage.setItem(`chartData_${id}`, JSON.stringify(newData));
+      
       console.log("📌 [CanvasArea] Updated Pages with chartData:", updated[currentPage]);
+      saveState(updated); // ✅ บันทึก State ใหม่ พร้อม chartData
       return updated;
     });
   };
+
+  useEffect(() => {
+  if (pageItems.length > 0) {
+    const updated = pageItems.map((item) => {
+      if (item.type === "chartbox") {
+        const storedChartData = localStorage.getItem(`chartData_${item.id}`);
+        if (storedChartData) {
+          return {
+            ...item,
+            chartData: JSON.parse(storedChartData),
+          };
+        }
+      }
+      return item;
+    });
+
+    // ✅ อัปเดต State แค่ครั้งเดียว ไม่ให้วนลูป
+    setPages((prev) => {
+      const updatedPages = JSON.parse(JSON.stringify(prev));
+      updatedPages[currentPage] = updated;
+      return updatedPages;
+    });
+  }
+  // ✅ เพิ่ม Dependency Array เพื่อป้องกันการวนลูป
+}, []); 
+
+ useEffect(() => {
+    const handleFilterUpdate = (event) => {
+        console.log("🎯 [CanvasArea] Filter Update Received: ", event.detail);
+        
+        if (event.detail && event.detail[selectedFile]) {
+            setPages((prev) => {
+                const updated = [...prev];
+                updated[currentPage] = event.detail[selectedFile].rows;
+                return updated;
+            });
+
+            // ✅ อัปเดตข้อมูล filteredData ให้กับ ChartBox
+            setFilteredData(event.detail);
+
+            console.log("📌 [CanvasArea] Pages Updated:", event.detail[selectedFile].rows);
+        }
+    };
+
+    window.addEventListener("filter-updated", handleFilterUpdate);
+
+    return () => {
+        window.removeEventListener("filter-updated", handleFilterUpdate);
+    };
+}, [selectedFile, currentPage]);
 
  
   
@@ -230,14 +279,20 @@ const updateTextItem = (field, value) => {
                     isLocked={isLocked}
                     selectedFile={selectedFile}
                     selectedColumns={selectedColumns}
-                    data={data}
+                    data={filteredData ? { [selectedFile]: filteredData[selectedFile] } : data}
+                    filteredData={filteredData ? filteredData[selectedFile]?.rows : null}
                     viewMode={item.viewMode}
                     posX={item.posX}
                     posY={item.posY}
                     width={item.width}
                     height={item.height}
                     isActive={selectedItemIds.includes(item.id)}
-                    chartData={item.chartData}
+                    chartData={
+                      filteredData && selectedFile && filteredData[selectedFile]?.rows?.length > 0 
+                        ? filteredData[selectedFile]?.rows 
+                        : item.chartData || []
+                    }
+                    // filterData={filterData} 
                     onSelect={() => {
                       setSelectedItemIds([item.id]);
                       if (item.viewMode === "table") {
@@ -262,20 +317,15 @@ const updateTextItem = (field, value) => {
                     }}
                     
                     onUpdateSize={(id, width, height) => {
-                      setPages((prev) => {
-                        const updated = JSON.parse(JSON.stringify(prev));
-                        if (!updated[currentPage]) {
-                          updated[currentPage] = [];
-                        }
-                    
-                        updated[currentPage] = updated[currentPage].map(el =>
-                          el.id === id ? { ...el, width, height } : el
-                        );
-                    
-                        saveState(updated);
-                        return updated;
-                      });
-                    }}
+                        setPages((prev) => {
+                          const updated = JSON.parse(JSON.stringify(prev));
+                          updated[currentPage] = updated[currentPage].map((el) =>
+                            el.id === id ? { ...el, width, height } : el
+                          );
+                          saveState(updated);
+                          return updated;
+                        });
+                      }}
                     
                   />
                 );
@@ -285,47 +335,47 @@ const updateTextItem = (field, value) => {
                 console.log("📌 Rendering TextBox with item: ", item);
                 return (
                    <TextBox
-      key={item.id}
-      id={item.id}
-      text={item.text}
-      posX={item.posX}
-      posY={item.posY}
-      width={item.width || 200}
-      height={item.height || 100}
-      isSelected={selectedItemIds.includes(item.id)}
-      onSelect={() => setSelectedItemIds([item.id])}
-      onChange={(newText) => handleTextChange(item.id, newText)}
-      onDelete={() => handleDelete(item.id)}
-      onUpdatePosition={(x, y) => {
-        setPages((prev) => {
-          const updated = JSON.parse(JSON.stringify(prev));
-          if (!updated[currentPage]) {
-            updated[currentPage] = [];
-          }
-          
-          updated[currentPage] = updated[currentPage].map(el =>
-            el.id === item.id ? { ...el, posX: x ?? 0, posY: y ?? 0 } : el
-          );
-          
-          saveState(updated);
-          return updated;
-        });
-      }}
-      onUpdateSize={(id, width, height) => {
-        setPages((prev) => {
-          const updated = JSON.parse(JSON.stringify(prev));
-          if (!updated[currentPage]) {
-            updated[currentPage] = [];
-          }
-          updated[currentPage] = updated[currentPage].map(el =>
-            el.id === id ? { ...el, width, height } : el
-          );
-          saveState(updated);
-          return updated;
-        });
-      }}
-      style={{ ...item }} // ✅ ต้องส่งเป็น Spread Object
-    />
+                  key={item.id}
+                  id={item.id}
+                  text={item.text}
+                  posX={item.posX}
+                  posY={item.posY}
+                  width={item.width || 200}
+                  height={item.height || 100}
+                  isSelected={selectedItemIds.includes(item.id)}
+                  onSelect={() => setSelectedItemIds([item.id])}
+                  onChange={(newText) => handleTextChange(item.id, newText)}
+                  onDelete={() => handleDelete(item.id)}
+                  onUpdatePosition={(x, y) => {
+                    setPages((prev) => {
+                      const updated = JSON.parse(JSON.stringify(prev));
+                      if (!updated[currentPage]) {
+                        updated[currentPage] = [];
+                      }
+                      
+                      updated[currentPage] = updated[currentPage].map(el =>
+                        el.id === item.id ? { ...el, posX: x ?? 0, posY: y ?? 0 } : el
+                      );
+                      
+                      saveState(updated);
+                      return updated;
+                    });
+                  }}
+                  onUpdateSize={(id, width, height) => {
+                    setPages((prev) => {
+                      const updated = JSON.parse(JSON.stringify(prev));
+                      if (!updated[currentPage]) {
+                        updated[currentPage] = [];
+                      }
+                      updated[currentPage] = updated[currentPage].map(el =>
+                        el.id === id ? { ...el, width, height } : el
+                      );
+                      saveState(updated);
+                      return updated;
+                    });
+                  }}
+                  style={{ ...item }} // ✅ ต้องส่งเป็น Spread Object
+                />
                 );
               }
 

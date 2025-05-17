@@ -257,6 +257,7 @@ const Toolbar = ({ activePanel, setActivePanel, pages, setPages,
     }
   };
 
+  
   return (
     <div className="fixed top-0 left-0 w-full">
          <DashNav reportId={report._id} reportName={reportName} setReportName={setReportName} />
