@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-
+import { useMainData } from "../MainDataContext/page";
+import ColumnFormatMenu from "../componentsDPfeature/ColumnFormatMenu";
+import PivotTableComponent from "../PivotTableComponent/page";
 const TransformTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const FillRef = useRef(null);
@@ -13,6 +15,7 @@ const TransformTab = () => {
   const StatisticsRef = useRef(null);
   const SplitColumnRef = useRef(null);
   const StandardRef = useRef(null);
+  const { mainData } = useMainData();
   const toggleDropdown = (dropdownId) => {
     setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
   };
@@ -204,12 +207,7 @@ const TransformTab = () => {
                     )}
                 </div>
                 <div  >
-                    <button
-                        className=" px-1 py-1 rounded hover:bg-gray-200 flex items-center" 
-                    >
-                        <img src="/PivotColumn.png" alt="PivotColumn" width={20} height={20} />
-                        <span className="ml-1.5" style={{ fontSize: "0.75rem" }}>Pivot Column</span>
-                    </button>
+                    <PivotTableComponent />
                 </div>  
             </div>
             <div className="flex flex-col">
@@ -294,27 +292,7 @@ const TransformTab = () => {
                 )}
             </div>
             <div className="relative inline-block" ref={FormatRef}>
-                <button
-                    className={`btn flex flex-col items-center ${isDropdownOpen === "Format-file" ? "bg-gray-200" : ""}`}
-                    onClick={() => toggleDropdown("Format-file")}
-                >
-                    <img src="/Format.png" alt="Format" width={37} height={37} />
-                    <span className="block" style={{ fontSize: "0.75rem" }}>Format▾</span>
-                </button>
-                {isDropdownOpen === "Format-file" && (
-                    <ul className="absolute top-full  bg-white text-black shadow-lg  w-40 z-50 border border-gray-300">
-                    <li className="flex space-x-2 px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <svg className="px-2" width="39" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0.5" y="0.5" width="20" height="20" fill="#E3E3E3" stroke="black" />
-                        </svg>
-                        square
-                    </li>
-                    <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                        <img src="/circle.png" alt="circle" style={{ width: "38px", height: "auto" }} className="px-2 max-h-full object-contain" />
-                        circle
-                    </li>
-                    </ul>
-                )}
+            <ColumnFormatMenu/>
             </div>
             <div className="flex flex-col">
                 <div  >

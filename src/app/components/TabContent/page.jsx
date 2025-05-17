@@ -1,25 +1,21 @@
-import { Space } from "lucide-react";
-import React, { useState, useRef, useEffect } from "react";
-import HomeTab from "@/app/components-RibbonDP/HometabDP/page";
-import TransformTab from "@/app/components-RibbonDP/TransformTabDP/page";
-import View from "@/app/components-RibbonDP/View/page";
+import React from "react";
+import View from '../../components-RibbonDP/View/page';
+import HomeTab from '../../components-RibbonDP/HomeTab';
+import TransformTab from '../../components-RibbonDP/TransformTab';
+import AddColumnTab from "../../components-RibbonDP/AddColumnTab";
 // components/TabContent.jsx
+
 const TabContent = ({ activeTab }) => {
   
     switch (activeTab) {
       case "Home":
-        return <HomeTab />;
+        return <HomeTab/>
       case "Transform":
-        return <TransformTab/>;
+        return <TransformTab/>
       case "Add Column":
-        return (
-          <div className="space-x-2">
-            <button className="btn">Zoom In</button>
-            <button className="btn">Zoom Out</button>
-          </div>
-        );
+        return <AddColumnTab/>
       case "View":
-        return <View/>;
+        return <View/>
       
       default:
         return null;
