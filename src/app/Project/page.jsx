@@ -7,20 +7,83 @@ import { useRouter } from 'next/navigation'
 
 const Project = () => {
 
-    const [activeButton, setActiveButton] = useState(null);
-        const router = useRouter();
+  const [activeButton, setActiveButton] = useState(null);
+   
+  const router = useRouter();
+  const [recentFiles, setRecentFiles] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [accessedTimes, setAccessedTimes] = useState({});
     
-        useEffect(() => {
-            const savedActiveButton = localStorage.getItem("activeButton");
-            if (savedActiveButton !== null) {
-                setActiveButton(Number(savedActiveButton));
+   useEffect(() => {
+        const fetchReports = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const res = await fetch('/api/getReport', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const sortedReports = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+                    setReports(sortedReports);
+
+                    // โหลดเวลาเข้าถึงจาก localStorage เมื่อโหลดรายงาน
+                    const initialAccessedTimes = {};
+                    sortedReports.forEach(report => {
+                        const storedTime = localStorage.getItem(`lastAccessedAt_${report._id}`);
+                        if (storedTime) {
+                            initialAccessedTimes[report._id] = storedTime;
+                        }
+                    });
+                    setAccessedTimes(initialAccessedTimes);
+                    console.log("useEffect: initialAccessedTimes", initialAccessedTimes);
+                    console.log("useEffect: setAccessedTimes", accessedTimes);
+                } else {
+                    console.error("Failed to fetch reports");
+                    setError("Failed to fetch reports");
+                }
+            } catch (error) {
+                console.error("Error fetching reports:", error);
+                setError("Error fetching reports");
+            } finally {
+                setLoading(false);
             }
-        }, []);
-    
-        const handleClick = (index) => {
-            setActiveButton(index);
-            localStorage.setItem("activeButton", index); 
         };
+
+        fetchReports();
+    }, []);
+
+    const handleClick = (report) => {
+        // บันทึกเวลาเข้าถึงล่าสุดใน Local Storage และ state
+        const now = new Date().toLocaleString();
+        localStorage.setItem(`lastAccessedAt_${report._id}`, now);
+        setAccessedTimes(prevTimes => {
+            const updatedTimes = {
+                ...prevTimes,
+                [report._id]: now
+            };
+           console.log("handleClick: updatedTimes", updatedTimes);
+            return updatedTimes;
+        });
+        router.push(`/Dashboard?id=${report._id}`);
+    };
+
+  // if (loading) {
+  //   return <div>กำลังโหลดรายงานล่าสุด...</div>;
+  // }
+
+  // if (error) {
+  //   return <div>เกิดข้อผิดพลาดในการโหลดรายงาน: {error}</div>;
+  // }
+  
+    
     
     return (
         <div className="fixed top-0 left-0 w-full z-50">
@@ -76,9 +139,11 @@ const Project = () => {
                                     fill="black"
                                 />
                             </svg>
-                            <span className='text-lg font-bold text-[#1E1E1E] relative left-[2.5rem]'>ล่าสุด</span>
+                            <span className='text-lg font-bold text-[#1E1E1E] relative left-[2.5rem]'>
+                                ล่าสุด
+                            </span>
                         </li>
-                        <li className='flex items-center p-2 w-full sm:w-[250px] rounded relative top-3 left-[3rem] hover:bg-[#f3f2f2] hover:shadow'>
+                        {/* <li className='flex items-center p-2 w-full sm:w-[250px] rounded relative top-3 left-[3rem] hover:bg-[#f3f2f2] hover:shadow'>
                         <Link href="/Favorites" className='flex'>
                             <svg 
                                 className='mr-5 relative top-1 left-[2rem]'
@@ -94,10 +159,12 @@ const Project = () => {
                                 strokeLinejoin="round"
                                 />
                             </svg>
-                                <span className='text-lg text-[#1E1E1E] relative left-[2.5rem]'>รายการโปรด</span>
+                                <span className='text-lg text-[#1E1E1E] relative left-[2.5rem]'>
+                                    รายการโปรด
+                            </span>
                         </Link>
                             
-                        </li>
+                        </li> */}
                     </div>
                 </div>
             </div>
@@ -106,9 +173,15 @@ const Project = () => {
                     ล่าสุด
                 </h1>
                 <div className="flex-row ">
-                    <span className="absolute top-36 left-36 text-lg  text-[#1E1E1E] w-full max-w-full font-medium">ชื่อ</span>
-                    <span className="absolute top-36 left-[30rem] text-lg  text-[#1E1E1E] w-full max-w-full font-medium">ชนิด</span>
-                    <span className="absolute top-36 left-[42rem] text-lg  text-[#1E1E1E] w-full max-w-full font-medium">เปิด</span>
+                    <span className="absolute top-36 left-36 text-lg  text-[#1E1E1E] w-full max-w-full font-medium">
+                        ชื่อ
+                    </span>
+                    {/* <span className="absolute top-36 left-[30rem] text-lg  text-[#1E1E1E] w-full max-w-full font-medium">
+                        ชนิด
+                    </span> */}
+                    <span className="absolute top-36 left-[42rem] text-lg  text-[#1E1E1E] w-full max-w-full font-medium">
+                        เปิด
+                    </span>
                     <svg 
                         className='absolute top-36 left-[5.25rem]'
                         width="24" 
@@ -137,6 +210,33 @@ const Project = () => {
                         <path d="M917 0H0V2H917V0Z" fill="black" mask="url(#path-1-inside-1_353_997)"/>
                     </svg>
                 </div>
+                <ul className="absolute top-48 left-16 w-full">
+                 {reports.map((report) => {
+                            // ดึงเวลาเข้าถึงล่าสุดจาก Local Storage
+                            const displayTime = accessedTimes[report._id] || '-';
+                            console.log("accessedTimes",accessedTimes)
+                            console.log(`Reading from state: accessedTimes[${report._id}]`, displayTime, "report._id", report._id);
+
+                            return (
+                                <li key={report._id} className="flex items-center mb-4 justify-between pr-[26rem]">
+                                    <div className="flex items-center">
+                                        
+                                        <Link
+                                            href={`/Dashboard?id=${report._id}`}
+                                            className="text-[#1E1E1E] hover:underline pl-[5rem]"
+                                            onClick={() => handleClick(report)} // เรียก handleClick เมื่อคลิก
+                                        >
+                                            {report.title || 'Untitled Report'}
+                                        </Link>
+                                    </div>
+                                    <span className="text-sm text-[#1E1E1E] ">
+                                        {displayTime}
+                                    </span>
+                                </li>
+                            );
+                        })}
+                </ul>
+                
                 
             </div>
         </div>
@@ -145,3 +245,5 @@ const Project = () => {
 };
 
 export default Project;
+
+
