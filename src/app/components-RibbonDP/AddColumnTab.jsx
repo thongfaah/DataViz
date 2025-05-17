@@ -6,6 +6,7 @@ import AddBlankColumn from "../componentsDPfeature/AddBlankColumn";
 import dynamic from 'next/dynamic';
 
 
+
 const AddColumnTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const HeadersRef = useRef(null);
@@ -13,11 +14,14 @@ const AddColumnTab = () => {
   const { mainData, setMainData } = useMainData();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isModalOpen2, setIsModalOpen2] = useState(false);
+  const [showPivot, setShowPivot] = useState(false);
   const PivotTable = dynamic(() => import("../componentsDPfeature/PivotTable"), { ssr: false });
   const toggleDropdown = (dropdownId) => {
     setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
   };
-
+  const handleTogglePivot = () => {
+    setShowPivot(!showPivot);
+  };
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -92,7 +96,9 @@ const AddColumnTab = () => {
                 </button>
                 <AddColumnModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
             </div>
-            <PivotTable />
+            <div className="flex items-center space-x-4 bg-gray-200 p-2">
+      
+    </div>
         </div>
         <p className="text-xs text-black">General</p>
     </div>

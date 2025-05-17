@@ -34,19 +34,29 @@ export default function CsvTxtParser2({ fileContent: initialFileContent = '', de
 
   // 🔥 useEffect ตัวนี้ จะทำงานทันทีเมื่อ fileContent เปลี่ยน (รวมทั้งตอนเปิดหน้ามาเลย)
   useEffect(() => {
-    if (!fileContent) return; // ถ้าไม่มีไฟล์ ก็ไม่ต้องทำอะไร
+  if (!fileContent) return; // ถ้าไม่มีไฟล์ ก็ไม่ต้องทำอะไร
 
-    let detectedDelimiter = delimiter;
-    if (delimiter === 'auto') {
-      if (fileContent.includes('\t')) detectedDelimiter = '\t';
-      else if (fileContent.includes(',')) detectedDelimiter = ',';
-      else detectedDelimiter = ' ';
-    }
+  console.log("Raw File Content:", fileContent); // 🔍 ตรวจสอบเนื้อหาไฟล์ที่อ่านได้
+  console.log("File Type Detected:", delimiter); // 🔍 ตรวจสอบ Delimiter ที่ใช้
+  
+  let detectedDelimiter = delimiter;
+  if (delimiter === 'auto') {
+    if (fileContent.includes('\t')) detectedDelimiter = '\t';
+    else if (fileContent.includes(',')) detectedDelimiter = ',';
+    else detectedDelimiter = ' ';
+  }
 
-    let lines = fileContent.split('\n').map((line) => line.trim()).filter(line => line.length > 0); // ลบบรรทัดว่าง
-    const parsedData = lines.map((line) => line.split(detectedDelimiter));
-    setData(parsedData);
-  }, [fileContent, delimiter]); // 🔥 fileContent หรือ delimiter เปลี่ยนเมื่อไร ทำใหม่ทันที
+  console.log("Detected Delimiter:", detectedDelimiter); // 🔍 ตรวจสอบ delimiter ที่ detect ได้
+
+  let lines = fileContent.split('\n').map((line) => line.trim()).filter(line => line.length > 0); // ลบบรรทัดว่าง
+  console.log("Lines Parsed:", lines); // 🔍 ตรวจสอบแต่ละบรรทัดที่แยกออกมาได้
+
+  const parsedData = lines.map((line) => line.split(detectedDelimiter));
+  console.log("Parsed Data:", parsedData); // 🔍 ตรวจสอบข้อมูลที่แยกเป็น Array
+  
+  setData(parsedData);
+}, [fileContent, delimiter]);
+
 
   const handleUploadToDB = async () => {
     if (!fileContent || !fileName) {

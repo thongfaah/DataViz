@@ -9,6 +9,13 @@ const MergeTable = ({ tableA, tableB, onMergeComplete }) => {
     const [mergedData, setMergedData] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
 
+    // 🔍 ค้นหาคีย์ที่เหมือนกันระหว่าง tableA และ tableB
+    const getCommonKeys = () => {
+        const keysA = Object.keys(tableA[0] || {});
+        const keysB = Object.keys(tableB[0] || {});
+        return keysA.filter(key => keysB.includes(key));
+    };
+
     // ฟังก์ชัน Merge
     const handleMerge = () => {
         if (!primaryKeyA || !primaryKeyB) {
@@ -57,33 +64,22 @@ const MergeTable = ({ tableA, tableB, onMergeComplete }) => {
         }
     };
 
+    const commonKeys = getCommonKeys();
+
     return (
-        <div className="p-4 space-y-1  text-gray-600">
+        <div className="p-4 space-y-1 text-gray-600">
             <div className="space-y-2">
-                <label>Select Primary Key for Left Table</label>
+                <label>Select Primary Key (Shared Columns)</label>
                 <select
                     value={primaryKeyA}
-                    onChange={(e) => setPrimaryKeyA(e.target.value)}
+                    onChange={(e) => {
+                        setPrimaryKeyA(e.target.value);
+                        setPrimaryKeyB(e.target.value);
+                    }}
                     className="p-2 border rounded w-full"
                 >
-                    <option value="" disabled></option>
-                    {Object.keys(tableA[0] || {}).map((key, index) => (
-                        <option key={index} value={key}>
-                            {key}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="space-y-2  text-gray-600">
-                <label>Select Primary Key for Right Table</label>
-                <select
-                    value={primaryKeyB}
-                    onChange={(e) => setPrimaryKeyB(e.target.value)}
-                    className="p-2 border rounded w-full"
-                >
-                    <option value="" disabled></option>
-                    {Object.keys(tableB[0] || {}).map((key, index) => (
+                    <option value="" disabled>-- Select Primary Key --</option>
+                    {commonKeys.map((key, index) => (
                         <option key={index} value={key}>
                             {key}
                         </option>
@@ -104,19 +100,16 @@ const MergeTable = ({ tableA, tableB, onMergeComplete }) => {
                     <option value="full">Full Outer Join</option>
                 </select>
             </div>
-            <div className="space-x-2 flex justify-end ">
-              <button
-                onClick={handleMerge}
-                className="bg-[#2B3A67] text-white px-7 py-1 rounded"
-              >
-                OK
-              </button>
-              <button
-                
-                className=" text-black border border-gray-500 px-3 py-1 rounded"
-              >
-                Cancel
-              </button>
+            <div className="space-x-2 flex justify-end">
+                <button
+                    onClick={handleMerge}
+                    className="bg-[#2B3A67] text-white px-7 py-1 rounded"
+                >
+                    OK
+                </button>
+                <button className="text-black border border-gray-500 px-3 py-1 rounded">
+                    Cancel
+                </button>
             </div>
 
             {errorMessage && (

@@ -10,6 +10,7 @@ const AppendModal = ({ onClose}) => {
   const [selectedDatasets, setSelectedDatasets] = useState([]);
   const [mergedResult, setMergedResult] = useState(null);
   const [error, setError] = useState('');
+  const { setMainData } = useMainData();
   const nodeRef = useRef(null);
   useEffect(() => {
     fetchDataFromDB();
@@ -42,58 +43,68 @@ const AppendModal = ({ onClose}) => {
       setError("Error connecting to server.");
     }
   };
-  {/*const handleAppend = () => {
-    setError('');
-  
-    if (!mainData || !mainData.columns || !mainData.rows) {
-      setError('Main data is not available.');
-      return;
-    }
-  
-    if (selectedDatasets.length !== 1) {
-      setError('Please select a dataset first.');
-      return;
-    }
-  
-    const selectedTable = uploadedTables.find(d => d.key === selectedDatasets[0]);
-  
-    if (!selectedTable) {
-      setError('Selected dataset not found.');
-      return;
-    }
-  
-    try {
-      // 🔧 แปลง mainData ให้เป็น table (เหมือนกับ uploadedTables)
-      const mainDataObj = {};
-      mainData.columns.forEach(col => {
-        mainDataObj[col] = mainData.rows.map(row => row[col]);
-      });
-      const mainTable = table(mainDataObj);
-  
-      const otherTable = selectedTable.data;
-  
-      const allColumns = Array.from(
-        new Set([...mainTable.columnNames(), ...otherTable.columnNames()])
-      );
-  
-      const alignTable = (tbl) => {
-        const currentCols = tbl.columnNames();
-        const missingCols = allColumns.filter(col => !currentCols.includes(col));
-        const nullCols = Object.fromEntries(missingCols.map(col => [col, () => null]));
-        return missingCols.length ? tbl.derive(nullCols) : tbl;
-      };
-  
-      const alignedMain = alignTable(mainTable);
-      const alignedOther = alignTable(otherTable);
-  
-      const result = alignedMain.concat(alignedOther);
-      setMergedResult(result);
-    } catch (err) {
-      console.error('Append Error:', err);
-      setError('Failed to append datasets. Ensure data is valid.');
-    }
-  }; ยังไม่บันทึกลงDatabase*/}
-  const handleAppend = async () => {
+  const handleAppend = () => {
+  setError('');
+
+  if (!mainData || !mainData.columns || !mainData.rows) {
+    setError('Main data is not available.');
+    return;
+  }
+
+  if (selectedDatasets.length !== 1) {
+    setError('Please select a dataset first.');
+    return;
+  }
+
+  const selectedTable = uploadedTables.find(d => d.key === selectedDatasets[0]);
+
+  if (!selectedTable) {
+    setError('Selected dataset not found.');
+    return;
+  }
+
+  try {
+    const mainDataObj = {};
+    mainData.columns.forEach(col => {
+      mainDataObj[col] = mainData.rows.map(row => row[col]);
+    });
+    const mainTable = table(mainDataObj);
+
+    const otherTable = selectedTable.data;
+
+    const allColumns = Array.from(
+      new Set([...mainTable.columnNames(), ...otherTable.columnNames()])
+    );
+
+    const alignTable = (tbl) => {
+      const currentCols = tbl.columnNames();
+      const missingCols = allColumns.filter(col => !currentCols.includes(col));
+      const nullCols = Object.fromEntries(missingCols.map(col => [col, () => null]));
+      return missingCols.length ? tbl.derive(nullCols) : tbl;
+    };
+
+    const alignedMain = alignTable(mainTable);
+    const alignedOther = alignTable(otherTable);
+
+    const result = alignedMain.concat(alignedOther);
+
+    // ⬇️ อัพเดต mainData ที่ MainDataContext
+    const newMainData = {
+      table_name: mainData.table_name + ' (Appended)',
+      columns: allColumns,
+      rows: result.objects()
+    };
+    setMainData(newMainData);
+
+    setMergedResult(result);
+    onClose();
+
+  } catch (err) {
+    console.error('Append Error:', err);
+    setError('Failed to append datasets. Ensure data is valid.');
+  }
+};
+  {/*const handleAppend = async () => {
     setError('');
   
     if (!mainData || !mainData.columns || !mainData.rows) {
@@ -163,7 +174,7 @@ const AppendModal = ({ onClose}) => {
       console.error('Append Error:', err);
       setError('Failed to append datasets. Ensure data is valid.');
     }
-  };
+  };บันทึกลงDatabase*/}
   
   
   

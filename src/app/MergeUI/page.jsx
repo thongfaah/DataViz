@@ -68,7 +68,7 @@ const MergeUI = ({ isOpen, onClose }) => {
       onRequestClose={onClose}
       contentLabel="Merge Table Modal"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
-      className="bg-white w-[90%] h-[90%] rounded-lg p-4 overflow-auto"
+      className="bg-white w-[90%] h-[80%] rounded-lg p-4 overflow-auto"
     >
       <div className="modal-header cursor-move text-2xl font-semibold mb-5 relative">
         Merge

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useMainData } from "../MainDataContext/page";
 import ColumnFormatMenu from "../componentsDPfeature/ColumnFormatMenu";
+import PivotTableComponent from "../PivotTableComponent/page";
 const TransformTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const FillRef = useRef(null);
@@ -206,12 +207,7 @@ const TransformTab = () => {
                     )}
                 </div>
                 <div  >
-                    <button
-                        className=" px-1 py-1 rounded hover:bg-gray-200 flex items-center" 
-                    >
-                        <img src="/PivotColumn.png" alt="PivotColumn" width={20} height={20} />
-                        <span className="ml-1.5" style={{ fontSize: "0.75rem" }}>Pivot Column</span>
-                    </button>
+                    <PivotTableComponent />
                 </div>  
             </div>
             <div className="flex flex-col">
