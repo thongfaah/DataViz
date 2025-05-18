@@ -32,7 +32,7 @@ return (
             <Container className="flex justify-content-between align-items-center">
               <Navbar.Brand href="/Homepage" className="text-[#2B3A67] text-4xl font-bold px-3 mt-2">ClarityViz</Navbar.Brand>  
             
-            <Nav className=" flex justify-center mx-auto px-3">
+            <Nav className=" flex justify-center mx-auto px-3 ">
               <Form className="w-50 relative">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                   className="absolute left-2.5 top-5">
@@ -83,14 +83,14 @@ return (
               </Nav>
 
              {/* Profile Section */}
-            <Nav className="flex px-3 mt-2 relative">
+            <Nav className="flex px-3 mt-2 relative ">
 
               {/* Dropdown Container */}
-              <div className="relative">
+              <div className="relative ">
                 
                 {/* Toggle Button */}
                 <button
-                  className="bg-transparent border-none flex items-center justify-center focus:outline-none"
+                  className="bg-transparent border-none flex items-center justify-center  focus:outline-none"
                   onClick={() => setOpen(!open)}
                 >
                   <svg width="40" height="40" viewBox="0 0 67 67" fill="none" xmlns="http://www.w3.org/2000/svg">
