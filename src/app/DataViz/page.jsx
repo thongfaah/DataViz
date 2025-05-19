@@ -149,7 +149,7 @@
 import React, { useState } from "react";
 import MoreGraphSidebar from "../MoreGraphSidebar/page";
 
-const DataViz = ({ viewMode, setViewMode, selectedFile, data, selectedColumns, selectedChartId, onChangeAxis }) => {
+const DataViz = ({ viewMode, setViewMode, selectedFile, data, selectedColumns, selectedChartId, onChangeAxis, onChangeColor }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
   const [showMoreGraphSidebar, setShowMoreGraphSidebar] = useState(false);
 
@@ -221,6 +221,7 @@ const DataViz = ({ viewMode, setViewMode, selectedFile, data, selectedColumns, s
           selectedColumns={selectedColumns}
           selectedChartId={selectedChartId}
           onChangeAxis={onChangeAxis} 
+          onChangeColor={onChangeColor}
         />
       )}
     </div>

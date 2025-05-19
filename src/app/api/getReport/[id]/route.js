@@ -47,7 +47,7 @@ export async function DELETE(request, { params }) {
 
   try {
     await Report.findByIdAndDelete(id);
-    return NextResponse.json({ message: "Report deleted successfully" }, { status: 204 });
+    return NextResponse.json({ message: "Report deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error(error.message);
     return NextResponse.json({ error: "Failed to delete report" }, { status: 500 });

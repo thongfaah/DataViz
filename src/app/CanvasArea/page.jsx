@@ -35,7 +35,8 @@ const CanvasArea = forwardRef(({
   onSelectAll,
   setSelectedChartId,
   filteredData,
-  setFilteredData
+  setFilteredData,
+  colors
 }, ref) => {
   
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
@@ -293,6 +294,7 @@ const updateTextItem = (field, value) => {
                         : item.chartData || []
                     }
                     // filterData={filterData} 
+                    colors={item.colors}
                     onSelect={() => {
                       setSelectedItemIds([item.id]);
                       if (item.viewMode === "table") {

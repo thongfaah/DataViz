@@ -10,10 +10,14 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const AreaChartView = ({ chartData, selectedColumns, selectedFile, width, height }) => {
+const AreaChartView = ({ chartData, selectedColumns, selectedFile, width, height, colors }) => {
   if (!selectedColumns[selectedFile] || selectedColumns[selectedFile].length < 2) {
     return <div>📢 โปรดเลือกคอลัมน์อย่างน้อย 2 คอลัมน์</div>;
   }
+
+    // ✅ ถ้า colors ไม่มีการกำหนด จะใช้สี default
+  const defaultColor = "#8884d8";
+  const colorSet = colors || {};
 
   return (
     <div style={{ width: width || "100%", height: height || "100%" }}>
@@ -29,8 +33,8 @@ const AreaChartView = ({ chartData, selectedColumns, selectedFile, width, height
               type="monotone"
               dataKey={col}
               stackId="1"
-              stroke="#8884d8"
-              fill="#8884d8"
+              stroke={colorSet[`colorSet${index}`] || defaultColor}
+              fill={colorSet[`colorSet${index}`] || defaultColor}
             />
           ))}
         </AreaChart>

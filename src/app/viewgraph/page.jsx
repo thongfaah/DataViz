@@ -13,7 +13,7 @@ import BoxPlotView from "../Boxplot/page";
 import AreaChartView from "../AreaChart/page";
 import HeatmapView from "../Heatmap/page";
 
-const ViewModeGraph = ({ viewMode, selectedFile, selectedColumns, data, width, height }) => {
+const ViewModeGraph = ({ viewMode, selectedFile, selectedColumns, data, width, height, colors }) => {
 
   useEffect(() => {
     console.log("📊 ViewModeGraph props:", {
@@ -94,11 +94,11 @@ const ViewModeGraph = ({ viewMode, selectedFile, selectedColumns, data, width, h
 
   switch (viewMode) {
     case "bar":
-      return <BarChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />;
+      return <BarChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} colors={colors} />;
     case "pie":
-      return <PieChartView pieData={pieData} width={width} height={height} />;
+      return <PieChartView pieData={pieData} width={width} height={height} colors={colors} />;
     case "line":
-      return <LineChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />;
+      return <LineChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} colors={colors} />;
     case "tree":
       return <TreeMapView treeData={treeData} width={width} height={height} />;
     case "scatter":
@@ -106,11 +106,11 @@ const ViewModeGraph = ({ viewMode, selectedFile, selectedColumns, data, width, h
     case "bubble":
       return <BubbleChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />;
     case "histogram":
-      return <HistogramChartView data={chartData} dataKey={selectedColumns[selectedFile]?.[1] || ""} width={width} height={height} />;
+      return <HistogramChartView data={chartData} dataKey={selectedColumns[selectedFile]?.[1] || ""} width={width} height={height} colors={colors}/>;
     case "boxplot":
-      return <BoxPlotView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />;
+      return <BoxPlotView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} colors={colors} />;
     case "area":
-      return <AreaChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />;
+      return <AreaChartView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} colors={colors} />;
     case "heatmap":
       return <HeatmapView chartData={chartData} selectedColumns={selectedColumns} selectedFile={selectedFile} width={width} height={height} />;
     default:

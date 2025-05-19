@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import DataViz from "../DataViz/page";
 
-const InsertPanel = ({ addTable, addTextBox, viewMode, setViewMode, selectedFile, selectedColumns, data, selectedChartId, onChangeAxis, onAddShape }) => {
+const InsertPanel = ({ addTable, addTextBox, viewMode, setViewMode, selectedFile, selectedColumns, data, selectedChartId, onChangeAxis, onAddShape, onChangeColor}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -166,7 +166,8 @@ const InsertPanel = ({ addTable, addTextBox, viewMode, setViewMode, selectedFile
         data={data}
         selectedColumns={selectedColumns}
         selectedChartId={selectedChartId}
-        onChangeAxis={onChangeAxis} 
+        onChangeAxis={onChangeAxis}
+        onChangeColor={onChangeColor} 
       />
     </div>
   );

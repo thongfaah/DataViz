@@ -1,11 +1,50 @@
-import React from 'react';
+"use client"
 
-const MoreGraphSidebar = ({ onClose, setViewMode, selectedFile, data, selectedColumns, selectedChartId, onChangeAxis }) => {
+import React, {useState, useEffect} from 'react';
+import { SketchPicker } from 'react-color';
+
+const MoreGraphSidebar = ({ onClose, setViewMode, selectedFile, data, selectedColumns, selectedChartId, onChangeAxis, onChangeColor }) => {
 
   const columnOptions = data[selectedFile]?.columns || [];
   const selected = selectedColumns[selectedFile] || [];
   const selectedX = selected[0];
   const selectedY = selected[1];
+
+  // State for colors
+  const defaultColors = {
+    bar: ["#3498db", "#e74c3c", "#2ecc71"],
+    line: ["#3498db"],
+    pie: ["#e74c3c", "#2ecc71", "#9b59b6"],
+    scatter: ["#1abc9c", "#34495e"],
+    area: ["#3498db"],
+  };
+
+    const [colorConfig, setColorConfig] = useState(defaultColors.bar);
+  const [colorPickerIndex, setColorPickerIndex] = useState(null);
+
+  // Update color palette based on the chart type
+  useEffect(() => {
+    if (defaultColors[setViewMode]) {
+      setColorConfig(defaultColors[setViewMode]);
+    }
+  }, [setViewMode]);
+
+  // Color Picker Handler
+  const handleColorChange = (color, index) => {
+  const updatedColors = [...colorConfig];
+  updatedColors[index] = color.hex;
+  setColorConfig(updatedColors);
+
+  // ✅ ส่งค่าไปที่ ChartBox ผ่าน onChangeColor
+  console.log("🎨 [MoreGraphSidebar] Changing Color: ", {
+    chartId: selectedChartId,
+    colorKey: `colorSet${index}`,
+    colorValue: color.hex,
+  });
+  
+  onChangeColor(selectedChartId, `colorSet${index}`, color.hex);
+};
+
 
   return (
     <div
@@ -20,6 +59,7 @@ const MoreGraphSidebar = ({ onClose, setViewMode, selectedFile, data, selectedCo
         // boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
         zIndex: 20,
         padding: '16px',
+        overflowY: 'auto' 
       }}
     >
       <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
@@ -126,6 +166,7 @@ const MoreGraphSidebar = ({ onClose, setViewMode, selectedFile, data, selectedCo
             ))}
           </select>
         </label>
+
         <label style={{ marginTop: '12px', display: 'block' }}>
           Y Axis:
           <select
@@ -137,7 +178,49 @@ const MoreGraphSidebar = ({ onClose, setViewMode, selectedFile, data, selectedCo
               <option key={col} value={col}>{col}</option>
             ))}
           </select>
-        </label>
+        </label> 
+      </div>
+
+       {/* 🎨 ส่วนที่ 2: เลือกสีของแต่ละชุด */}
+      <div className="border-t pt-2 pb-3" style={{ marginTop: '16px' }}>
+        <h4>Customize Colors</h4>
+
+        {colorConfig.map((color, index) => (
+          <div key={index} style={{ marginTop: '8px' }}>
+            <label>Color Set {index + 1}:</label>
+            <div 
+              className="flex items-center justify-between mt-2"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setColorPickerIndex(index)}
+            >
+              <div
+                style={{
+                  backgroundColor: color,
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc'
+                }}
+              />
+              <span>{color}</span>
+            </div>
+
+            {colorPickerIndex === index && (
+              <SketchPicker
+                color={color}
+                onChange={(newColor) => handleColorChange(newColor, index)}
+                disableAlpha
+                styles={{
+                  default: {
+                    picker: {
+                      width: "170px" // ✅ กำหนดขนาดที่ต้องการได้
+                    }
+                  }
+                }}
+              />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

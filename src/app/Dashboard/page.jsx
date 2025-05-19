@@ -42,6 +42,9 @@ const App = () => {
   const [clipboard, setClipboard] = useState(null);
   const [reportName, setReportName] = useState("Untitled Report");
   const router = useRouter();
+  const [selectedFiles, setSelectedFiles] = useState({});
+  const [selectedColumnsMap, setSelectedColumnsMap] = useState({});
+  const [visibleColumnsMap, setVisibleColumnsMap] = useState({});
 
   const canvasRef = useRef(null);
   const pageItems = pages[currentPage] || [];
@@ -382,6 +385,43 @@ useEffect(() => {
    
   };
 
+// const toggleFileVisibility = async (file) => {
+//   setVisibleColumns((prev) => ({
+//     ...prev,
+//     [file]: !prev[file],
+//   }));
+
+//   if (!data[file]) {
+//     try {
+//       console.log(`🌐 กำลัง Fetch: /api/get-data?file=${file}`);
+//       const res = await fetch(`/api/get-data?file=${file}`);
+
+//       console.log(`🌐 Response Status: ${res.status}`);
+//       if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
+
+//       const result = await res.json();
+//       console.log(`✅ ข้อมูลที่ได้จาก API: `, result);
+
+//       if (result && result.columns) {
+//         console.log(`✅ เซ็ตข้อมูลสำเร็จ: ${file}`);
+//         setData((prev) => ({ ...prev, [file]: result }));
+//       } else {
+//         console.warn(`⚠️ ข้อมูลไม่ถูกต้องหรือไม่สมบูรณ์: ${file}`);
+//       }
+//     } catch (error) {
+//       console.error("❌ Fetch Data Error:", error.message);
+//       alert("❌ โหลดข้อมูลล้มเหลว!");
+//     }
+//   } else {
+//     console.log(`🔍 ข้อมูล ${file} มีอยู่แล้วใน State`);
+//   }
+// };
+
+
+
+
+
+
   const toggleColumn = (file, col) => {
     setSelectedColumns((prev) => {
       const newCols = { ...prev };
@@ -391,6 +431,22 @@ useEffect(() => {
       return newCols;
     });
   };
+
+//   const toggleColumn = (boxId, file, col) => {
+//   setSelectedColumnsMap((prev) => {
+//     const newCols = prev[boxId]?.[file] || [];
+//     const updatedCols = newCols.includes(col)
+//       ? newCols.filter((c) => c !== col)
+//       : [...newCols, col];
+//     return {
+//       ...prev,
+//       [boxId]: {
+//         ...prev[boxId],
+//         [file]: updatedCols,
+//       },
+//     };
+//   });
+// };
 
   const setViewMode = (newMode) => {
     if (selectedItemIds.length === 0) return;
@@ -423,6 +479,27 @@ useEffect(() => {
       return { ...prev, [file]: updated };
     });
   };
+
+  const onChangeColor = (chartId, colorKey, colorValue) => {
+  console.log(`🔄 เปลี่ยนสี ${colorKey} ของ Chart ${chartId} เป็น ${colorValue}`);
+
+  setPages((prevPages) => {
+    const updatedPages = [...prevPages];
+    updatedPages[currentPage] = updatedPages[currentPage].map((item) => {
+      if (item.id === chartId) {
+        return {
+          ...item,
+          colors: {
+            ...item.colors,
+            [colorKey]: colorValue,
+          },
+        };
+      }
+      return item;
+    });
+    return updatedPages;
+  });
+};
   
   const bringForward = () => {
     const updatedItems = [...pages[currentPage]];
@@ -640,6 +717,8 @@ useEffect(() => {
   }
 }, [activePanel, currentPage]);
 
+
+
 return (
     <div  
       className="ml-[5.5rem] h-[100vh] overflow-hidden flex flex-col"
@@ -702,6 +781,7 @@ return (
           selectedColumns={selectedColumns}
           selectedChartId={selectedItemIds[0]}  
           onChangeAxis={onChangeAxis} 
+          onChangeColor={onChangeColor}
           onAddShape={addShape} 
         />}
       {activePanel === "arrange" && 
@@ -717,12 +797,22 @@ return (
         />}
       {activePanel === "view" && <ViewPanel {...{ zoomLevel, setZoomLevel, showGrid, setShowGrid, isLocked, setIsLocked }} />}
 
-      <SidebarData {...{ files, selectedFile, setSelectedFile, data, selectedColumns, visibleColumns, toggleFileVisibility, toggleColumn, isSidebarOpen, setIsSidebarOpen }}
-       style={{
-    height: 'calc(100vh - 64px)',
-    overflowY: 'auto', // ให้เลื่อนเฉพาะส่วน Data
-  }}
-   />
+        <SidebarData 
+          files={files} 
+          data={data} 
+          selectedFile={selectedFile} 
+          selectedColumns={selectedColumns} 
+          visibleColumns={visibleColumns} 
+          setSelectedFile={setSelectedFile} 
+          toggleFileVisibility={toggleFileVisibility} 
+          toggleColumn={toggleColumn} 
+          isSidebarOpen={isSidebarOpen} 
+          setIsSidebarOpen={setIsSidebarOpen}
+          style={{
+            height: 'calc(100vh - 64px)',
+            overflowY: 'auto', // ✅ ให้เลื่อนเฉพาะส่วน Data
+          }}
+        />
 
       
       <CanvasArea
