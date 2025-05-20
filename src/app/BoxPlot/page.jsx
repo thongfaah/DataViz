@@ -2,16 +2,7 @@
 import React from "react";
 import Plot from "react-plotly.js";
 
-const COLORS = [
-  "rgba(100, 100, 200, 0.6)",
-  "rgba(200, 100, 100, 0.6)",
-  "rgba(100, 200, 100, 0.6)",
-  "rgba(200, 200, 100, 0.6)",
-  "rgba(100, 200, 200, 0.6)",
-  "rgba(200, 100, 200, 0.6)"
-];
-
-const BoxPlotView = ({ chartData, selectedColumns, selectedFile, width, height }) => {
+const BoxPlotView = ({ chartData, selectedColumns, selectedFile, width, height, colors }) => {
   const columns = selectedColumns[selectedFile] || [];
 
   const numericColumns = columns.filter((col) =>
@@ -27,14 +18,18 @@ const BoxPlotView = ({ chartData, selectedColumns, selectedFile, width, height }
       .map((d) => Number(d[col]))
       .filter((v) => !isNaN(v));
 
+    // ✅ ใช้สีจาก props.colors ถ้ามีการตั้งค่า ถ้าไม่มีก็ใช้ค่าเริ่มต้น
+    const boxColor = colors?.[`colorSet${i}`] || `rgba(100, 100, 200, 0.6)`;
+    const lineColor = boxColor.replace("0.6", "1.0");
+
     return {
       x: values,
       type: "box",
       name: col,
       orientation: "h",
       boxpoints: "outliers",
-      marker: { color: COLORS[i % COLORS.length] },
-      line: { color: COLORS[i % COLORS.length].replace("0.6", "1.0") },
+      marker: { color: boxColor },
+      line: { color: lineColor },
     };
   });
 

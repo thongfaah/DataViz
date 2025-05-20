@@ -199,6 +199,7 @@ const ChartBox = ({
   onUpdatePosition,
   onUpdateSize,
   filteredData,
+  colors= {}
 }) => {
   const targetRef = useRef(null);
   const [position, setPosition] = useState({ x: posX, y: posY });
@@ -289,6 +290,7 @@ const ChartBox = ({
             data={chartData || data}
             width={size.width}
             height={size.height}
+            colors={colors} 
           />
         </div>
       </div>

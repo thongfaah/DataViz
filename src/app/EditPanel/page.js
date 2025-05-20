@@ -158,43 +158,46 @@ const handleApplyFilter = (filterData) => {
     };
 
 
-    const handleFileChange = async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-      
-        try {
-          // ✅ สร้าง FormData เพื่อเตรียมส่งไป API
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("fileName", file.name);
-      
-          // ✅ เรียก API เพื่ออัปโหลด
-          const res = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-      
-          // ✅ ตรวจสอบ Response
-          const result = await res.json();
-          if (!res.ok) {
-            console.error("Response Error:", result);
-            throw new Error(result.error || "Upload failed");
-          }
-      
-          console.log("Upload Success:", result);
+const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-          refreshSidebar(); 
-      
-          // ✅ แสดง Popup ทันทีเมื่อ Upload สำเร็จ
-          setFileName(file.name); 
-          setShowPopup(true); 
-          resetPosition(); 
-      
-        } catch (error) {
-          console.error("Upload Error:", error.message);
-          alert("❌ อัปโหลดไฟล์ล้มเหลว!");
-        }
-      };
+    try {
+        Papa.parse(file, {
+            header: true,
+            complete: (result) => {
+                console.log("✅ ข้อมูลที่อ่านได้จากไฟล์: ", result.data);
+
+                // ✅ บันทึกข้อมูลลง State
+                setPages((prev) => {
+                    const updated = [...prev];
+                    updated[currentPage] = result.data;
+                    localStorage.setItem("dashboard_pages", JSON.stringify(updated)); 
+                    return updated;
+                });
+
+                // ✅ ส่งข้อมูลไปที่ Popup
+                setFileName(file.name); 
+                setShowPopup(true); 
+                resetPosition(); 
+
+                // ✅ บันทึกข้อมูลลง LocalStorage (สำหรับ TablePage)
+                localStorage.setItem(file.name, JSON.stringify({
+                    columns: Object.keys(result.data[0]),
+                    rows: result.data
+                }));
+            },
+            error: (error) => {
+                console.error("❌ Error parsing file:", error.message);
+            },
+        });
+    } catch (error) {
+        console.error("Upload Error:", error.message);
+        alert("❌ อัปโหลดไฟล์ล้มเหลว!");
+    }
+};
+
+
 
       
       
@@ -336,37 +339,38 @@ const handleApplyFilter = (filterData) => {
                     style={{ display: "none" }}
                 />
 
-                {showPopup && (
-                <div className="fixed inset-0 flex items-center justify-center z-50">
-                <Rnd
-                    size={isFullScreen ? { width: "100%", height: "100%" } : size}
-                    position={isFullScreen ? { x: 0, y: 0 } : position}
-                    onDragStop={(e, d) => setPosition({ x: d.x, y: d.y })}
-                    onResizeStop={(e, direction, ref, delta, newPosition) => {
-                    setSize({
-                        width: parseInt(ref.style.width, 10),
-                        height: parseInt(ref.style.height, 10),
-                    });
-                    }}
-                    enableResizing={{
-                    top: true,
-                    right: true,
-                    bottom: true,
-                    left: true,
-                    topRight: true,
-                    topLeft: true,
-                    bottomRight: true,
-                    bottomLeft: true,
-                    }}
-                    minWidth={500}
-                    minHeight={500}
-                    className="bg-white rounded shadow-lg border-2 border-[#2B3A67] rnd-container"
-                >
-                    <div className="relative h-full">
-                    <button
-                        onClick={() => {
+               {showPopup && (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+        <Rnd
+            size={isFullScreen ? { width: "100%", height: "100%" } : size}
+            position={isFullScreen ? { x: 0, y: 0 } : position}
+            onDragStop={(e, d) => setPosition({ x: d.x, y: d.y })}
+            onResizeStop={(e, direction, ref, delta, newPosition) => {
+                setSize({
+                    width: parseInt(ref.style.width, 10),
+                    height: parseInt(ref.style.height, 10),
+                });
+            }}
+            enableResizing={{
+                top: true,
+                right: true,
+                bottom: true,
+                left: true,
+                topRight: true,
+                topLeft: true,
+                bottomRight: true,
+                bottomLeft: true,
+            }}
+            minWidth={500}
+            minHeight={500}
+            className="bg-white rounded shadow-lg border-2 border-[#2B3A67] rnd-container"
+        >
+            <div className="relative h-full">
+                <button
+                    onClick={() => {
                         setShowPopup(false);
                         resetPosition();
+
                         }}
                         className="absolute top-2 right-2 text-gray-500"
                     >
@@ -438,6 +442,7 @@ const handleApplyFilter = (filterData) => {
                 </Rnd>
                 </div>
             )}
+
 
                     {/* refresh */}
                 <button 

@@ -1,8 +1,8 @@
 "use client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
 
-export default function LineChartView({ chartData, selectedColumns, selectedFile, width, height }) {
-  const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"];
+export default function LineChartView({ chartData, selectedColumns, selectedFile, width, height, colors= {} }) {
+  
 
   return (
     <div className="w-full h-full">
@@ -18,7 +18,7 @@ export default function LineChartView({ chartData, selectedColumns, selectedFile
               key={col}
               type="monotone"
               dataKey={col}
-              stroke={colors[index % colors.length]}
+              stroke={colors[`colorSet${index}`] || "#8884d8"}
               strokeWidth={2}
             />
           ))}

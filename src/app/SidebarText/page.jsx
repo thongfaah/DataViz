@@ -566,7 +566,7 @@ const SidebarText = ({
       </div>
 
       {/* Background */}
-      <div className="border-t pt-3 pb-3">
+      {/* <div className="border-t pt-3 pb-3">
         <h3 className="font-semibold text-[#2B3A67]">Background</h3>
         <div className="flex gap-2.5 my-2 items-center">
           <PaintBucket className="w-4 h-4" />
@@ -587,7 +587,51 @@ const SidebarText = ({
             ))}
           </select>
         </div>
-      </div>
+      </div> */}
+
+<div className="border-t pt-3 pb-3">
+  <h3 className="font-semibold text-[#2B3A67]">Background</h3>
+  <div className="flex gap-2.5 my-2 items-center">
+    <PaintBucket className="w-4 h-4" />
+    <select
+      className="border p-1 rounded w-[6rem] text-sm"
+      value={backgroundColor}
+      onChange={(e) => setBackgroundColor(e.target.value)}
+    >
+      <option value="transparent">Transparent</option>
+      <option value="#ffffff">White</option>
+      <option value="#f0f0f0">Light Gray</option>
+      <option value="#000000">Black</option>
+      <option value="#ff0000">Red</option>
+      <option value="#00ff00">Green</option>
+      <option value="#0000ff">Blue</option>
+    </select>
+
+    {/* ✅ ถ้าเลือก Transparent ก็ไม่ต้องแสดง Color Picker */}
+    {backgroundColor !== "transparent" && (
+      <input
+        type="color"
+        value={backgroundColor}
+        onChange={(e) => setBackgroundColor(e.target.value)}
+        className="w-8 h-7 p-0 cursor-pointer"
+      />
+    )}
+  </div>
+
+  {/* ✅ Opacity แยกบรรทัดออกมา */}
+  <div className="flex gap-2.5 mt-3 items-center">
+    <h3 className="text-sm">Opacity :</h3>
+    <select
+      className="border p-1 rounded w-[6rem] text-sm"
+      value={fade}
+      onChange={(e) => setFade(e.target.value)}
+    >
+      {["100%", "75%", "50%", "25%"].map((f) => (
+        <option key={f} value={f}>{f}</option>
+      ))}
+    </select>
+  </div>
+</div>
 
       {/* Border */}
       <div className="border-t pt-3">

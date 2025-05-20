@@ -22,7 +22,8 @@ export async function GET(request, { params }) {
 }
 
 // ✅ PUT Method
-export async function PUT(request, { params }) {
+export async function PUT(request, context) {
+  const params = await context.params; 
   const { id } = params;
   const { title, description, content } = await request.json();
 
@@ -47,7 +48,7 @@ export async function DELETE(request, { params }) {
 
   try {
     await Report.findByIdAndDelete(id);
-    return NextResponse.json({ message: "Report deleted successfully" }, { status: 204 });
+    return NextResponse.json({ message: "Report deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error(error.message);
     return NextResponse.json({ error: "Failed to delete report" }, { status: 500 });

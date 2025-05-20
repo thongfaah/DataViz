@@ -517,61 +517,92 @@ const TextBox = ({
   return () => window.removeEventListener("keydown", handleKeyDown);
 }, [isSelected, onDelete]);
 
+const hexToRGBA = (hex, opacity) => {
+  if (!/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) return hex;
+
+  let c = hex.substring(1).split('');
+  if (c.length === 3) {
+    c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+  }
+  const r = parseInt(c[0] + c[1], 16);
+  const g = parseInt(c[2] + c[3], 16);
+  const b = parseInt(c[4] + c[5], 16);
+
+  // แปลง fade เป็นค่า 0-1
+  const alphaMap = {
+    "100%": 1,
+    "75%": 0.75,
+    "50%": 0.5,
+    "25%": 0.25
+  };
+  
+  const alpha = alphaMap[opacity] ?? 1;
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 
   return (
-    <Rnd
-      size={{ width, height }}
-      position={{ x: posX, y: posY }}
-      onDragStop={(e, d) => {
-        onUpdatePosition?.(d.x, d.y);
-      }}
-      onResizeStop={(e, direction, ref, delta, position) => {
-        const newWidth = parseInt(ref.style.width, 10);
-        const newHeight = parseInt(ref.style.height, 10);
-        onUpdateSize?.(newWidth, newHeight);
-        onUpdatePosition?.(position.x, position.y);
-      }}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect?.();
-      }}
-      enableResizing={!style.isLocked}
-      disableDragging={style.isLocked}
-    >
-      <div
-        className={`relative w-full h-full ${isSelected ? "border-2 border-black" : "border"}`}
-        style={{
-          borderColor,
-          borderStyle: borderStyle.toLowerCase(),
-          borderWidth: `${borderWeight}px`,
-          borderRadius: `${borderRadius}px`,
-          backgroundColor,
-          overflow: "hidden",
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect?.();
-        }}
-      >
-        <textarea
-          value={text}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full h-full resize-none border-none outline-none"
-          style={{
-            fontSize: `${size}px`,
-            fontFamily: font,
-            color,
-            fontWeight: isBold ? "bold" : "normal",
-            fontStyle: isItalic ? "italic" : "normal",
-            textDecoration: isUnderline ? "underline" : "none",
-            textAlign,
-            backgroundColor,
-            opacity: getOpacityValue(fade),
-          }}
-          onFocus={onSelect}
-        />
-      </div>
-    </Rnd>
+<Rnd
+  size={{ width, height }}
+  position={{ x: posX, y: posY }}
+  onDragStop={(e, d) => {
+    console.log("📌 New Position:", d.x, d.y);
+    onUpdatePosition?.(d.x, d.y);
+  }}
+  onResizeStop={(e, direction, ref, delta, position) => {
+    const newWidth = parseInt(ref.style.width, 10);
+    const newHeight = parseInt(ref.style.height, 10);
+
+    console.log("📌 New Size:", newWidth, newHeight);
+    
+    // ✅ ส่งค่าไปอัปเดตใน Parent
+    onUpdateSize?.(newWidth, newHeight);
+    onUpdatePosition?.(position.x, position.y);
+  }}
+  onClick={(e) => {
+    e.stopPropagation();
+    onSelect?.();
+  }}
+  enableResizing
+>
+  <div
+    className={`relative w-full h-full ${isSelected ? "border-2 border-black" : "border"}`}
+    style={{
+      borderColor,
+      borderStyle: borderStyle.toLowerCase(),
+      borderWidth: `${borderWeight}px`,
+      borderRadius: `${borderRadius}px`,
+      backgroundColor,
+      overflow: "hidden",
+    }}
+    onClick={(e) => {
+      e.stopPropagation();
+      onSelect?.();
+    }}
+  >
+    <textarea
+      value={text}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full h-full resize-none border-none outline-none"
+      style={{
+        fontSize: `${size}px`,
+        fontFamily: font,
+        color,
+        fontWeight: isBold ? "bold" : "normal",
+        fontStyle: isItalic ? "italic" : "normal",
+        textDecoration: isUnderline ? "underline" : "none",
+        textAlign,
+        backgroundColor: backgroundColor === "transparent"
+          ? "transparent"
+          : hexToRGBA(backgroundColor, fade),
+        }} 
+        // opacity: getOpacityValue(fade),
+    
+      onFocus={onSelect}
+    />
+  </div>
+</Rnd>
   );
 };
 

@@ -7,11 +7,11 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  Label
+  Label,
 } from "recharts";
 import { bin } from "d3-array";
 
-const HistogramChartView = ({ data, dataKey }) => {
+const HistogramChartView = ({ data, dataKey, colors }) => {
   const values = data.map((item) => item[dataKey]);
   const bins = bin()(values);
 
@@ -19,6 +19,9 @@ const HistogramChartView = ({ data, dataKey }) => {
     name: `${(bin.x0 + bin.x1) / 2}`, // หรือใช้ `${bin.x0} - ${bin.x1}` ถ้าอยากแสดงช่วง
     count: bin.length,
   }));
+
+  // ถ้าไม่มีสีที่ส่งมาให้กำหนดค่าเริ่มต้น
+  const barColor = colors?.colorSet0 || "#8884d8";
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
@@ -41,7 +44,7 @@ const HistogramChartView = ({ data, dataKey }) => {
             />
           </YAxis>
           <Tooltip />
-          <Bar dataKey="count" fill="#8884d8" />
+          <Bar dataKey="count" fill={barColor} />
         </BarChart>
       </ResponsiveContainer>
     </div>
