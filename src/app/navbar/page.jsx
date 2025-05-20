@@ -108,7 +108,7 @@ return (
 
                 {/* Dropdown Menu */}
                 {open && (
-                  <div className="fixed  right-0 mt-3 w-56 bg-[#E3E3E3] shadow-lg rounded-lg p-3 z-50">
+                  <div className="fixed  right-0 mt-3 w-56 bg-[#E3E3E3] shadow-lg rounded-lg p-3 z-[9999] " style={{ position: "absolute" }}>
                     <h3 className="text-sm font-semibold text-black mb-2">Profile</h3>
 
                     <div className="flex items-center gap-3 mb-4">

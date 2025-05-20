@@ -61,40 +61,120 @@ export default function CsvTxtParser2({
 
   }, [fileContent, delimiter]);
 
-  const handleUploadToDB = async () => {
-    if (!fileContent || !fileName) {
-      alert('Please upload a file first!');
-      return;
-    }
+  // const handleUploadToDB = async () => {
+  //   if (!fileContent || !fileName) {
+  //     alert('Please upload a file first!');
+  //     return;
+  //   }
 
-    setLoading(true);
-    setUploadStatus('');
+  //   setLoading(true);
+  //   setUploadStatus('');
 
-    try {
-      const response = await fetch('/api/upload', {
+  //   try {
+  //     const response = await fetch('/api/upload', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({
+  //         fileName: fileName,
+  //         fileContent: fileContent,
+  //         delimiter: delimiter,
+  //       }),
+  //     });
+
+  //     const result = await response.json();
+  //     if (response.ok) {
+  //       setUploadStatus('✔️ Upload successful: ' + result.message);
+  //       router.push('/Dashboard');
+  //     } else {
+  //       setUploadStatus('❌ Error: ' + result.error);
+  //     }
+  //   } catch (error) {
+  //     console.error('Upload Error:', error);
+  //     setUploadStatus('❌ Failed to upload data');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+const handleUploadToDB = async () => {
+  if (!fileContent || !fileName) {
+    alert('Please upload a file first!');
+    return;
+  }
+
+  setLoading(true);
+  setUploadStatus('');
+
+  try {
+    let reportId = localStorage.getItem("reportId");
+
+    // ❗️ถ้ายังไม่มี reportId → สร้าง report ใหม่
+    if (!reportId) {
+      const createRes = await fetch('/api/getReport', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        },
         body: JSON.stringify({
-          fileName: fileName,
-          fileContent: fileContent,
-          delimiter: delimiter,
+          title: 'Untitled Report',
+          description: '',
+          content: [],
         }),
       });
 
-      const result = await response.json();
-      if (response.ok) {
-        setUploadStatus('✔️ Upload successful: ' + result.message);
-        router.push('/Dashboard');
-      } else {
-        setUploadStatus('❌ Error: ' + result.error);
-      }
-    } catch (error) {
-      console.error('Upload Error:', error);
-      setUploadStatus('❌ Failed to upload data');
-    } finally {
-      setLoading(false);
+      const createResult = await createRes.json();
+      if (!createRes.ok) throw new Error(createResult.error || "Failed to create report");
+
+      reportId = createResult._id;
+      localStorage.setItem("reportId", reportId);
     }
-  };
+
+    // 📦 อัปโหลดไฟล์พร้อม reportId
+    const uploadRes = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({
+        fileName,
+        fileContent,
+        delimiter,
+        reportId, // 👈 ส่งไปผูกกับไฟล์
+      }),
+    });
+
+    const uploadResult = await uploadRes.json();
+    if (!uploadRes.ok) throw new Error(uploadResult.error || "Upload failed");
+
+    setUploadStatus('✔️ Upload successful!');
+    router.push(`/Dashboard?id=${reportId}`); // ✅ ไปหน้า Dashboard พร้อม id
+
+  } catch (error) {
+    console.error("Upload error:", error.message);
+    setUploadStatus('❌ ' + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+//     const result = await response.json();
+//     if (response.ok) {
+//       setUploadStatus('✔️ Upload successful: ' + result.message);
+//       router.push('/Dashboard');
+//     } else {
+//       setUploadStatus('❌ Error: ' + result.error);
+//     }
+//   } catch (error) {
+//     console.error('Upload Error:', error);
+//     setUploadStatus('❌ Failed to upload data');
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
