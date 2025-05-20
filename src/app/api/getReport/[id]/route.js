@@ -22,7 +22,8 @@ export async function GET(request, { params }) {
 }
 
 // ✅ PUT Method
-export async function PUT(request, { params }) {
+export async function PUT(request, context) {
+  const params = await context.params; 
   const { id } = params;
   const { title, description, content } = await request.json();
 

@@ -36,7 +36,7 @@ const CanvasArea = forwardRef(({
   setSelectedChartId,
   filteredData,
   setFilteredData,
-  colors
+  colors,
 }, ref) => {
   
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
@@ -46,25 +46,29 @@ const CanvasArea = forwardRef(({
     selectedItemIds.length === 1 && item.id === selectedItemIds[0] && item.type === "text"
   );
 
-  const saveState = async (newPages) => {
-    if (!reportId) return;
   
-    setPages(newPages);
-  
-    try {
-      await fetch(`/api/getReport/${reportId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ pages: newPages }),
-      });
-  
-      console.log("Report updated successfully.");
-    } catch (error) {
-      console.error("Error updating report:", error);
-    }
-  };
+ const saveState = async (newPages) => {
+  if (!reportId) return;
+
+  setPages(newPages);
+
+  try {
+    // ✅ บันทึกลง LocalStorage ด้วย
+    localStorage.setItem("report_pages", JSON.stringify(newPages));
+
+    await fetch(`/api/getReport/${reportId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ pages: newPages }),
+    });
+
+    console.log("📌 บันทึกข้อมูลใน LocalStorage และ API เรียบร้อย");
+  } catch (error) {
+    console.error("❌ Error updating report:", error);
+  }
+};
 
 const updateTextItem = (field, value) => {
   setPages((prev) => {
@@ -152,54 +156,76 @@ const updateTextItem = (field, value) => {
     return pageItems.filter(item => item.groupId === groupId);
   };
   
-  const handleClick = (id, type) => {
-    if (type === "table") {
-      console.log("📌 เลือกตาราง ID:", id);
-    console.log("📌 Current Page Data:", pages[currentPage]);
-      setSelectedChartId(id);  // อัปเดต ID ที่เลือก
+const handleClick = (id, type) => {
+  if (type === "table") {
+    console.log("📌 เลือกตาราง ID:", id);
+
+    // ✅ โหลดข้อมูลจาก LocalStorage กลับมา
+    const storedData = localStorage.getItem(`chartData_${id}`);
+    if (storedData) {
+      console.log("📌 ข้อมูลที่ดึงกลับจาก LocalStorage:", storedData);
+
+      setPages((prev) => {
+        const updated = JSON.parse(JSON.stringify(prev));
+        updated[currentPage] = updated[currentPage].map(item =>
+          item.id === id ? { ...item, chartData: JSON.parse(storedData) } : item
+        );
+        return updated;
+      });
     }
-  };
+    setSelectedChartId(id);
+  }
+};
 
   const updateChartData = (id, newData) => {
-    setPages((prev) => {
-      const updated = JSON.parse(JSON.stringify(prev));
-      updated[currentPage] = updated[currentPage].map(item =>
-        item.id === id ? { ...item, chartData: newData } : item
-      );
+  console.log("🟢 [updateChartData] ถูกเรียกใช้งานแล้ว", id, newData);
 
-      // ✅ บันทึก chartData ลง LocalStorage ด้วย
-      localStorage.setItem(`chartData_${id}`, JSON.stringify(newData));
-      
-      console.log("📌 [CanvasArea] Updated Pages with chartData:", updated[currentPage]);
-      saveState(updated); // ✅ บันทึก State ใหม่ พร้อม chartData
-      return updated;
-    });
-  };
-
-  useEffect(() => {
-  if (pageItems.length > 0) {
-    const updated = pageItems.map((item) => {
-      if (item.type === "chartbox") {
-        const storedChartData = localStorage.getItem(`chartData_${item.id}`);
-        if (storedChartData) {
-          return {
-            ...item,
-            chartData: JSON.parse(storedChartData),
-          };
-        }
-      }
-      return item;
-    });
-
-    // ✅ อัปเดต State แค่ครั้งเดียว ไม่ให้วนลูป
-    setPages((prev) => {
-      const updatedPages = JSON.parse(JSON.stringify(prev));
-      updatedPages[currentPage] = updated;
-      return updatedPages;
-    });
+  if (!newData || !Array.isArray(newData)) {
+    console.error("❌ ข้อมูลที่ส่งมาไม่ถูกต้อง:", newData);
+    return;
   }
-  // ✅ เพิ่ม Dependency Array เพื่อป้องกันการวนลูป
-}, []); 
+
+  setPages((prev) => {
+    const updated = JSON.parse(JSON.stringify(prev));
+    updated[currentPage] = updated[currentPage].map(item =>
+      item.id === id ? { ...item, chartData: newData } : item
+    );
+
+    if (newData.length > 0) {
+      localStorage.setItem(`chartData_${id}`, JSON.stringify(newData));
+      console.log(`📌 [CanvasArea] บันทึกข้อมูลลง LocalStorage สำเร็จ: chartData_${id}`);
+    } else {
+      console.warn(`⚠️ ข้อมูลว่างเปล่า ไม่ได้บันทึกลง LocalStorage: chartData_${id}`);
+    }
+
+    saveState(updated);
+    return updated;
+  });
+};
+
+useEffect(() => {
+  const storedPages = localStorage.getItem("report_pages");
+  if (storedPages) {
+    console.log("📌 พบข้อมูลใน LocalStorage กำลังโหลด...");
+    const parsedPages = JSON.parse(storedPages);
+
+    // ✅ Restore ข้อมูลของ ChartBox แต่ละตัว
+    parsedPages.forEach((page) => {
+      page.forEach((item) => {
+        if (item.type === "chartbox") {
+          const storedData = localStorage.getItem(`chartData_${item.id}`);
+          if (storedData) {
+            item.chartData = JSON.parse(storedData);
+          }
+        }
+      });
+    });
+
+    setPages(parsedPages); // ✅ โหลดข้อมูลกลับมา
+  } else {
+    console.warn("⚠️ ไม่พบข้อมูลใน LocalStorage");
+  }
+}, []);
 
  useEffect(() => {
     const handleFilterUpdate = (event) => {
@@ -288,11 +314,16 @@ const updateTextItem = (field, value) => {
                     width={item.width}
                     height={item.height}
                     isActive={selectedItemIds.includes(item.id)}
+                    // chartData={
+                    //   filteredData && selectedFile && filteredData[selectedFile]?.rows?.length > 0 
+                    //     ? filteredData[selectedFile]?.rows 
+                    //     : item.chartData || []
+                    // }
                     chartData={
-                      filteredData && selectedFile && filteredData[selectedFile]?.rows?.length > 0 
-                        ? filteredData[selectedFile]?.rows 
-                        : item.chartData || []
-                    }
+  filteredData && selectedFile && filteredData[selectedFile]?.rows?.length > 0 
+    ? filteredData[selectedFile]?.rows 
+    : (item.chartData && Array.isArray(item.chartData) ? item.chartData : [])
+}
                     // filterData={filterData} 
                     colors={item.colors}
                     onSelect={() => {
@@ -363,15 +394,18 @@ const updateTextItem = (field, value) => {
                       return updated;
                     });
                   }}
-                  onUpdateSize={(id, width, height) => {
+                  onUpdateSize={(newWidth, newHeight) => {
                     setPages((prev) => {
                       const updated = JSON.parse(JSON.stringify(prev));
                       if (!updated[currentPage]) {
                         updated[currentPage] = [];
                       }
+
+                      // 🔥 ✅ Update Size
                       updated[currentPage] = updated[currentPage].map(el =>
-                        el.id === id ? { ...el, width, height } : el
+                        el.id === item.id ? { ...el, width: newWidth, height: newHeight } : el
                       );
+
                       saveState(updated);
                       return updated;
                     });
