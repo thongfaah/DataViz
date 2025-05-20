@@ -20,16 +20,13 @@
     "chart.js": "^4.4.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-
-    "d3": "^7.9.0",
-
     "cors": "^2.8.5",
+    "d3": "^7.9.0",
     "d3-array": "^3.2.4",
     "express": "^5.1.0",
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
-
     "lucide-react": "^0.477.0",
     "mongoose": "^8.14.0",
     "next": "^15.1.5",
@@ -47,11 +44,8 @@
     "react-modal": "^3.16.3",
     "react-moveable": "^0.56.0",
     "react-onclickoutside": "^6.13.1",
-
     "react-pivottable": "^0.11.0",
-
     "react-plotly.js": "^2.6.0",
-
     "react-resizable": "^3.0.5",
     "react-rnd": "^10.5.2",
     "react-router-dom": "^7.1.5",
@@ -60,13 +54,10 @@
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
-
+    "use-resize-observer": "^9.1.0",
     "uuid": "^11.1.0",
     "webdatarocks": "^1.4.9",
     "xlsx": "^0.18.5"
-
-    "use-resize-observer": "^9.1.0",
-
   },
   "devDependencies": {
     "eslint": "^8",

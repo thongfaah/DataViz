@@ -1,68 +1,74 @@
 'use client';
-
 import { useState, useEffect } from 'react';
+import { Rnd } from 'react-rnd';
 import { Input } from '../components/ui/input/page';
 import { Select, SelectItem } from '../components/ui/select/page';
-import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from '../components/ui/table/page';
+import {
+  Table,
+  TableHeader,
+  TableHead,
+  TableRow,
+  TableBody,
+  TableCell,
+} from '../components/ui/table/page';
 import { Button } from '../components/ui/button/page';
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
-export default function CsvTxtParser2({ fileContent: initialFileContent = '', delimiter: initialDelimiter = ',' }) {
+export default function CsvTxtParser2({
+  fileContent: initialFileContent = '',
+  delimiter: initialDelimiter = ',',
+  fileName: initialFileName = '',
+  closePopup,
+}) {
   const [data, setData] = useState([]);
   const [delimiter, setDelimiter] = useState(initialDelimiter);
   const [fileContent, setFileContent] = useState(initialFileContent);
-  const [fileName, setFileName] = useState('');
+  const [fileName, setFileName] = useState(initialFileName);
   const [rowsToShow, setRowsToShow] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
   const router = useRouter();
 
-  const handleProcessingClick = () => {
-    router.push('/DataProcessing');
-  };
+  // ⬇️ คำนวณตำแหน่งตรงกลางหน้าจอ
+  const [position, setPosition] = useState({
+    x: (window.innerWidth - 800) / 2,
+    y: (window.innerHeight - 600) / 2,
+  });
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target.result;
-      setFileContent(text);
-    };
-    reader.readAsText(file);
-  };
-
-  // 🔥 useEffect ตัวนี้ จะทำงานทันทีเมื่อ fileContent เปลี่ยน (รวมทั้งตอนเปิดหน้ามาเลย)
   useEffect(() => {
-  if (!fileContent) return; // ถ้าไม่มีไฟล์ ก็ไม่ต้องทำอะไร
+    if (!fileContent) return;
 
-  console.log("Raw File Content:", fileContent); // 🔍 ตรวจสอบเนื้อหาไฟล์ที่อ่านได้
-  console.log("File Type Detected:", delimiter); // 🔍 ตรวจสอบ Delimiter ที่ใช้
-  
-  let detectedDelimiter = delimiter;
-  if (delimiter === 'auto') {
-    if (fileContent.includes('\t')) detectedDelimiter = '\t';
-    else if (fileContent.includes(',')) detectedDelimiter = ',';
-    else detectedDelimiter = ' ';
-  }
+    let detectedDelimiter = delimiter;
+    if (delimiter === 'auto') {
+      if (fileContent.includes('\t')) detectedDelimiter = '\t';
+      else if (fileContent.includes(',')) detectedDelimiter = ',';
+      else detectedDelimiter = ' ';
+    }
 
-  console.log("Detected Delimiter:", detectedDelimiter); // 🔍 ตรวจสอบ delimiter ที่ detect ได้
+    let lines = fileContent
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
-  let lines = fileContent.split('\n').map((line) => line.trim()).filter(line => line.length > 0); // ลบบรรทัดว่าง
-  console.log("Lines Parsed:", lines); // 🔍 ตรวจสอบแต่ละบรรทัดที่แยกออกมาได้
+    const parsedData = lines.map((line) => line.split(detectedDelimiter));
+    setData(parsedData);
 
-  const parsedData = lines.map((line) => line.split(detectedDelimiter));
-  console.log("Parsed Data:", parsedData); // 🔍 ตรวจสอบข้อมูลที่แยกเป็น Array
-  
-  setData(parsedData);
-}, [fileContent, delimiter]);
+    // ⬇️ เซ็ต Popup ให้อยู่ตรงกลางเสมอเมื่อเปิดไฟล์
+    setPosition({
+      x: (window.innerWidth - 800) / 2,
+      y: (window.innerHeight - 600) / 2,
+    });
 
+  }, [fileContent, delimiter]);
 
   const handleUploadToDB = async () => {
     if (!fileContent || !fileName) {
       alert('Please upload a file first!');
       return;
     }
+
+    setLoading(true);
+    setUploadStatus('');
 
     try {
       const response = await fetch('/api/upload', {
@@ -71,71 +77,187 @@ export default function CsvTxtParser2({ fileContent: initialFileContent = '', de
         body: JSON.stringify({
           fileName: fileName,
           fileContent: fileContent,
-          delimiter: delimiter
+          delimiter: delimiter,
         }),
       });
 
       const result = await response.json();
       if (response.ok) {
-        alert('Upload successful: ' + result.message);
+        setUploadStatus('✔️ Upload successful: ' + result.message);
+        router.push('/Dashboard');
       } else {
-        alert('Error: ' + result.error);
+        setUploadStatus('❌ Error: ' + result.error);
       }
     } catch (error) {
       console.error('Upload Error:', error);
-      alert('Failed to upload data');
+      setUploadStatus('❌ Failed to upload data');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col p-4 space-y-4">
-      {/* Header */}
-      <div className="flex flex-wrap gap-4">
-        <Input type="file" accept=".csv,.txt" onChange={handleFileUpload} className="flex-1" />
-        <Select onChange={(value) => setDelimiter(value)} className="w-40" defaultValue={delimiter}>
-          <SelectItem value=",">Comma (,)</SelectItem>
-          <SelectItem value="\t">Tab (\t)</SelectItem>
-          <SelectItem value=" ">Space ( )</SelectItem>
-          <SelectItem value="auto">Auto Detect</SelectItem>
-        </Select>
-        <Select onChange={(value) => setRowsToShow(Number(value))} className="w-40">
-          <SelectItem value="10">Show 10 rows</SelectItem>
-          <SelectItem value="20">Show 20 rows</SelectItem>
-        </Select>
-      </div>
+    <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+      <Rnd
+        default={{
+          x: position.x,
+          y: position.y,
+          width: 800,
+          height: 600,
+        }}
+        minWidth={600}
+        minHeight={400}
+        bounds="window"
+        enableResizing={{
+          top: false,
+          bottom: true,
+          left: true,
+          right: true,
+          topLeft: true,
+          topRight: true,
+          bottomLeft: true,
+          bottomRight: true,
+        }}
+        className="bg-white rounded-lg shadow-lg overflow-hidden"
+      >
+        <div className="p-5">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl text-gray-900 ">{fileName}</h2>
+            <button onClick={closePopup} className="text-gray-500 font-bold">
+              ✕
+            </button>
+          </div>
 
-      {/* Table */}
-      <div className="flex-1 overflow-auto rounded border border-gray-600">
-        {data.length > 0 ? (
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow>
-                {data[0]?.map((col, index) => (
-                  <TableHead key={index}>{col || `Column ${index + 1}`}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.slice(1, rowsToShow + 1).map((row, rowIndex) => (
-                <TableRow key={rowIndex}>
-                  {row.map((cell, colIndex) => (
-                    <TableCell key={colIndex}>{cell}</TableCell>
+          {/* 🔹 Delimiter Selector */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex-row">
+              <label htmlFor="delimiter" className="text-gray-700">
+              Delimiter
+            </label>
+            <Select
+              onChange={(value) => setDelimiter(value)}
+              className="w-[800px]"
+              defaultValue={delimiter}
+            >
+              <SelectItem value=",">Comma (,)</SelectItem>
+              <SelectItem value="\t">Tab (\t)</SelectItem>
+              <SelectItem value=" ">Space ( )</SelectItem>
+              <SelectItem value="auto">Auto Detect</SelectItem>
+            </Select>
+            </div>
+            <div>
+              <label htmlFor="delimiter" className="text-gray-700 ">
+              Rows to show
+            </label>
+              <Select
+              onChange={(value) => setRowsToShow(Number(value))}
+              className="w-40"
+            >
+              <SelectItem value="10">Show 10 rows</SelectItem>
+              <SelectItem value="20">Show 20 rows</SelectItem>
+              <SelectItem value="50">Show 50 rows</SelectItem>
+            </Select>
+            </div>
+            
+          </div>
+
+          {/* 🔹 Data Table พร้อม Scrollbar */}
+          <div className="flex-1 max-h-[400px] overflow-auto rounded border border-gray-600">
+            {data.length > 0 ? (
+              <Table className="w-200">
+                <TableHeader>
+                  <TableRow>
+                    {data[0]?.map((col, index) => (
+                      <TableHead key={index}>
+                        {col || `Column ${index + 1}`}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.slice(1).map((row, rowIndex) => (
+                    <TableRow key={rowIndex}>
+                      {row.map((cell, colIndex) => (
+                        <TableCell key={colIndex}>{cell}</TableCell>
+                      ))}
+                    </TableRow>
                   ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="text-center text-gray-400 p-10">No data loaded.</div>
-        )}
-      </div>
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center text-gray-400 p-10">
+                No data loaded.
+              </div>
+            )}
+          </div>
 
-      {/* Footer Button */}
-      <div className="flex justify-end gap-4">
-        <Button onClick={handleUploadToDB}>Upload</Button>
-        <Button onClick={handleProcessingClick}>Processing Data</Button>
-        <Button onClick={() => router.back()}>Cancel</Button>
-      </div>
+          {/* 🔹 Footer Button */}
+          <div className="flex justify-end gap-4 mt-4">
+            <Button onClick={handleUploadToDB} disabled={loading}>
+              {loading ? 'Uploading...' : 'Upload to Database'}
+            </Button>
+            <Button onClick={() => router.push('/DataProcessing')}>
+              Processing Data
+            </Button>
+            <Button onClick={closePopup}>Cancel</Button>
+          </div>
+
+          {/* 🔹 Status Message */}
+          {uploadStatus && (
+            <div
+              className={`mt-2 ${
+                uploadStatus.includes('✔️')
+                  ? 'text-green-500'
+                  : 'text-red-500'
+              }`}
+            >
+              {uploadStatus}
+            </div>
+          )}
+        </div>
+      </Rnd>
     </div>
   );
 }
+
+
+
+
+
+{/* Popup ส่วนแสดงผล */}
+      {/*{showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <Rnd
+            size={isFullScreen ? { width: "100%", height: "100%" } : size}
+            position={isFullScreen ? { x: 0, y: 0 } : position}
+            onDragStop={(e, d) => setPosition({ x: d.x, y: d.y })}
+            onResizeStop={(e, direction, ref, delta, newPosition) => {
+              setSize({
+                width: parseInt(ref.style.width, 10),
+                height: parseInt(ref.style.height, 10),
+              });
+              setPosition({
+                x: Math.max(0, newPosition.x),
+                y: Math.max(0, newPosition.y),
+              });
+            }}
+            enableResizing={{
+              top: true, right: true, bottom: true, left: true,
+              topRight: true, topLeft: true, bottomRight: true, bottomLeft: true,
+            }}
+            minWidth={500}
+            minHeight={500}
+            className="bg-white rounded shadow-lg border-2 border-[#2B3A67] rnd-container"
+          >
+            <div className="relative h-full">
+              <button onClick={() => { setShowPopup(false); centerPopup(); }} className="absolute top-2 right-2 text-gray-500">
+                ╳
+              </button>
+              <button onClick={toggleFullScreen} className="absolute text-2xl text-gray-500 top-1 right-10">
+                {isFullScreen ? "🗗" : "▢"}
+              </button>
+              <CsvTxtParser2 fileContent={fileContent} delimiter={delimiter} />
+            </div>
+          </Rnd>
+        </div>
+)}*/}
