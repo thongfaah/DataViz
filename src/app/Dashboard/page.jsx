@@ -24,7 +24,7 @@ const App = () => {
   const searchParams = useSearchParams();
   const reportId = searchParams.get("id");
   const [report, setReport] = useState(null);
-  const { data: session } = useSession();
+  const { data: session} = useSession();
   const [loading, setLoading] = useState(true);
   const [filteredData, setFilteredData] = useState(null);
 
@@ -48,6 +48,28 @@ const App = () => {
 
   const canvasRef = useRef(null);
   const pageItems = pages[currentPage] || [];
+
+  
+// useEffect(() => {
+//   const fetchJWT = async () => {
+//     try {
+//       const res = await fetch("/api/token");
+//       const result = await res.json();
+//       if (res.ok && result.token) {
+//         localStorage.setItem("token", result.token);
+//         console.log("✅ JWT token stored in localStorage");
+//       } else {
+//         console.error("❌ Failed to fetch token:", result.error);
+//       }
+//     } catch (err) {
+//       console.error("❌ Error fetching JWT token:", err.message);
+//     }
+//   };
+
+//   if (status === "authenticated") {
+//     fetchJWT();
+//   }
+// }, [status]);
 
   useEffect(() => {
   if (selectedFile) {
@@ -281,17 +303,24 @@ useEffect(() => {
   };
 
   // ✅ ฟังก์ชันดึงข้อมูลจาก Server
-  const fetchFiles = async () => {
-    try {
-      const res = await fetch("/api/list-files");
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to fetch files");
-      setFiles(result.files);
-    } catch (error) {
-      console.error("Fetch Files Error:", error);
-      alert("❌ โหลดรายการไฟล์ล้มเหลว!");
-    }
-  };
+const fetchFiles = async () => {
+  try {
+    const res = await fetch("/api/list-files", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}` // ✅ เพิ่ม JWT token
+      }
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Failed to fetch files");
+    setFiles(result.files);
+  } catch (error) {
+    console.error("Fetch Files Error:", error);
+    alert("❌ โหลดรายการไฟล์ล้มเหลว!");
+  }
+};
 
   useEffect(() => {
     fetchFiles();
@@ -721,12 +750,13 @@ useEffect(() => {
 
 return (
     <div  
-      className="ml-[5.5rem] h-[100vh] overflow-hidden flex flex-col"
+      className="ml-[5.5rem] h-[100vh] overflow-hidden flex flex-col z-0"
       style={{
         maxHeight: '100vh',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative'
       }}
     >
       
@@ -811,6 +841,8 @@ return (
           style={{
             height: 'calc(100vh - 64px)',
             overflowY: 'auto', // ✅ ให้เลื่อนเฉพาะส่วน Data
+            zIndex: 10,         // < ✅ ใส่ค่า zIndex ต่ำลง
+            position: "relative" 
           }}
         />
 

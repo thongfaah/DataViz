@@ -25,32 +25,61 @@ export default function CsvTxtParser({ fileContent = '', fileName = '', delimite
     setData(parsedData);
   }, [fileContent, localDelimiter]);
 
+  // const handleSaveToDB = async () => {
+  //   setIsSaving(true);
+  //   try {
+  //     const res = await fetch('/api/upload', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         fileName,
+  //         fileContent,
+  //         delimiter: localDelimiter,
+  //       }),
+  //     });
+
+  //     const result = await res.json();
+  //     if (!res.ok) throw new Error(result.error || 'Upload failed');
+
+  //     alert('✅ Data saved to database!');
+  //   } catch (error) {
+  //     console.error('❌ Save error:', error);
+  //     alert('Failed to save data: ' + error.message);
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
+
   const handleSaveToDB = async () => {
-    setIsSaving(true);
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName,
-          fileContent,
-          delimiter: localDelimiter,
-        }),
-      });
+  setIsSaving(true);
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem("token")}` // ✅ เพิ่มตรงนี้
+      },
+      body: JSON.stringify({
+        fileName,
+        fileContent,
+        delimiter: localDelimiter,
+      }),
+    });
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Upload failed');
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Upload failed');
 
-      alert('✅ Data saved to database!');
-    } catch (error) {
-      console.error('❌ Save error:', error);
-      alert('Failed to save data: ' + error.message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    alert('✅ Data saved to database!');
+  } catch (error) {
+    console.error('❌ Save error:', error);
+    alert('Failed to save data: ' + error.message);
+  } finally {
+    setIsSaving(false);
+  }
+};
+
 
   return (
     <div className="p-4 space-y-4">

@@ -21,7 +21,7 @@ const SidebarData = ({
   return (
     <div>
       <aside
-        className={`fixed top-[10rem] h-[32.3rem] right-0 w-[15rem] bg-white border-l border-gray-300 transition-transform ${
+        className={`fixed top-[10rem] h-[32.3rem] right-0 w-[15rem] bg-white border-l border-gray-300 transition-transform z-[20] ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -54,14 +54,14 @@ const SidebarData = ({
                 <button
                   onClick={() => {
                     // setSelectedFile(file);
-                    toggleFileVisibility(file);
+                    toggleFileVisibility(file.table_name);
                   }}
 
                   // className={`flex w-full text-left text-sm p-2 ${
                   //   selectedFile === file ? "bg-gray-100" : ""
                   // }`}
                   className={`flex w-full text-left text-sm p-2 ${
-                    visibleColumns[file] ? "bg-gray-100" : ""
+                    visibleColumns[file.table_name] ? "bg-gray-100" : ""
                   }`}
                 >
                   <svg
@@ -80,19 +80,19 @@ const SidebarData = ({
                       strokeLinejoin="round"
                     />
                   </svg>
-                  {file}
+                  {file.table_name}
                 </button>
-                {visibleColumns[file] && data[file] && (
+                {visibleColumns[file.table_name] && data[file.table_name] && (
                   <div className="ml-4 mt-2">
                     <h3 className="font-bold text-sm mb-2">Columns</h3>
-                    {data[file]?.columns.map((col, colIndex) => (
+                    {data[file.table_name]?.columns.map((col, colIndex) => (
                       <label key={colIndex} className="block">
                         <input
                           type="checkbox"
-                          checked={selectedColumns[file]?.includes(col) || false}
+                          checked={selectedColumns[file.table_name]?.includes(col) || false}
                           onChange={() => {
-                              setSelectedFile(file);
-                             toggleColumn(file, col)
+                              setSelectedFile(file.table_name);
+                             toggleColumn(file.table_name, col)
                             }}
                           className="mr-2"
                         />
