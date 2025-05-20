@@ -43,12 +43,12 @@ export default function TableViewer() {
       </div>
 
       {/* Main Table */}
-      <div className="w-3/4 p-4 overflow-auto">
+      <div className="w-3/4 p-4 overflow-hidden">
         {mainData ? (
           <>
             <h2 className="text-xl font-semibold mb-4">{mainData.table_name}</h2>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-auto max-h-[65vh]">
               <table className="min-w-full border border-gray-300">
                 <thead className="bg-gray-200">
                   <tr>

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useMainData } from "../MainDataContext/page";
 import ColumnFormatMenu from "../componentsDPfeature/ColumnFormatMenu";
 import PivotTableComponent from "../PivotTableComponent/page";
+import ReplaceModal from "../componentsDPfeature/ReplaceModal";
 const TransformTab = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const FillRef = useRef(null);
@@ -16,6 +17,8 @@ const TransformTab = () => {
   const SplitColumnRef = useRef(null);
   const StandardRef = useRef(null);
   const { mainData } = useMainData();
+  const { selectedColumn } = useMainData();
+  const [showReplaceModal, setShowReplaceModal] = useState(false);
   const toggleDropdown = (dropdownId) => {
     setIsDropdownOpen(isDropdownOpen === dropdownId ? null : dropdownId);
   };
@@ -155,31 +158,24 @@ const TransformTab = () => {
                 </div>  
             </div>
             <div className="flex flex-col">
-                <div className="relative inline-block" ref={ReplaceValuesRef}>
+                <div  >
                     <button
-                        className={`px-1 py-1 rounded hover:bg-gray-200 flex items-center ${isDropdownOpen === "ReplaceValues-file" ? "bg-gray-200" : ""}`}
-                        onClick={() => toggleDropdown("ReplaceValues-file")}
+                       disabled={!selectedColumn}
+                    onClick={() => setShowReplaceModal(true)}
+                    className={`px-1 py-2 rounded hover:bg-gray-200 flex items-center ${
+                    selectedColumn ? "" : " text-gray-500 cursor-not-allowed"
+                    }`}
                     >
                         <svg width="22" height="22" viewBox="0 0 154 154" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fillRule="evenodd" clipRule="evenodd" d="M31.0021 35.9879L52.7642 57.827L74.1125 36.421L67.375 29.6835L57.6345 39.3759L57.5575 23.9759C57.5488 22.6733 58.0453 21.4181 58.9427 20.474C59.8402 19.5299 61.0687 18.9704 62.37 18.9131H77V9.625H62.37C60.492 9.62497 58.6325 9.99627 56.8986 10.7176C55.1646 11.4389 53.5904 12.4959 52.2665 13.8278C50.9426 15.1598 49.8951 16.7404 49.1844 18.4787C48.4736 20.217 48.1136 22.0787 48.125 23.9566V39.4625L37.7974 29.1926L31.0021 35.9879ZM95.2009 53.2551H95.2971C97.0553 56.2517 99.6412 57.75 103.055 57.75C106.841 57.75 109.857 56.1362 112.102 52.9086C114.374 49.681 115.506 45.4043 115.5 40.0785C115.5 35.1633 114.534 31.2909 112.603 28.4611C110.665 25.625 107.906 24.2069 104.325 24.2069C100.424 24.2069 97.4146 26.0709 95.2971 29.799H95.2009V9.625H86.625V56.9704H95.1913L95.2009 53.2551ZM95.0565 43.043V39.7705C95.0565 37.3835 95.618 35.4553 96.7409 33.9859C97.2229 33.2984 97.8643 32.7378 98.6102 32.3523C99.3561 31.9668 100.184 31.7677 101.024 31.7721C101.859 31.7404 102.688 31.9314 103.426 32.3254C104.163 32.7195 104.783 33.3025 105.221 34.0147C106.215 35.4906 106.712 37.5535 106.712 40.2036C106.712 43.3863 106.17 45.8503 105.086 47.5956C104.644 48.4029 103.987 49.0726 103.189 49.531C102.391 49.9895 101.482 50.219 100.562 50.1944C99.7879 50.199 99.0241 50.0168 98.3354 49.6632C97.6468 49.3097 97.0535 48.7952 96.6061 48.1635C95.5338 46.6773 94.9818 44.8741 95.0565 43.043ZM86.625 122.902C84.161 124.384 80.6062 125.125 75.9605 125.125C70.5384 125.125 66.1462 123.415 62.7839 119.995C59.428 116.575 57.75 112.167 57.75 106.77C57.75 100.533 59.5467 95.6244 63.14 92.0439C66.7462 88.4313 71.5587 86.625 77.5775 86.625C81.7483 86.625 84.7642 87.1993 86.625 88.3479V97.9536C84.4619 96.2236 81.7718 95.2861 79.002 95.2971C75.8707 95.2971 73.3874 96.2532 71.5523 98.1654C69.7299 100.052 68.822 102.67 68.8284 106.019C68.8284 109.266 69.701 111.823 71.4464 113.691C73.1981 115.532 75.6012 116.453 78.6555 116.453C81.3697 116.453 84.0262 115.567 86.625 113.796V122.902ZM38.5 67.375L28.875 77V134.75L38.5 144.375H105.875L115.5 134.75V77L105.875 67.375H38.5ZM38.5 77H105.875V134.75H38.5V77Z" fill="#2B3A67"/>
                         </svg>
-                        <span className="ml-1" style={{ fontSize: "0.75rem" }}>Replace Values▾</span>
+                        <span className="ml-1" style={{ fontSize: "0.75rem" }}>Replace Values</span>
                     </button>
-                    {isDropdownOpen === "ReplaceValues-file" && (
-                        <ul className="absolute top-full  bg-white text-black shadow-lg  w-40 z-50 border border-gray-300">
-                        <li className="flex space-x-2 px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                            <svg className="px-2" width="39" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.5" y="0.5" width="20" height="20" fill="#E3E3E3" stroke="black" />
-                            </svg>
-                            square
-                        </li>
-                        <li className="flex px-4 py-2 hover:bg-gray-200 cursor-pointer items-center">
-                            <img src="/circle.png" alt="circle" style={{ width: "38px", height: "auto" }} className="px-2 max-h-full object-contain" />
-                            circle
-                        </li>
-                        </ul>
-                    )}
+                    {showReplaceModal && (
+                    <ReplaceModal onClose={() => setShowReplaceModal(false)} />
+                )}
                 </div>
+                
                 <div className="relative inline-block" ref={FillRef}>
                     <button
                         className={`px-1 py-1 rounded hover:bg-gray-200 flex items-center ${isDropdownOpen === "Fill-file" ? "bg-gray-200" : ""}`}
@@ -414,6 +410,7 @@ const TransformTab = () => {
                     </ul>
                 )}
             </div>
+            
         </div>
         
         <p className="text-xs text-black mt-5">Number Column</p>

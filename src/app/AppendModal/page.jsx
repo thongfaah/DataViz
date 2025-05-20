@@ -187,7 +187,7 @@ const AppendModal = ({ onClose}) => {
           Append
             <button
               onClick={onClose}
-              className="absolute top-0 right-0 text-gray-600 hover:text-red-500 text-2xl"
+              className="absolute top-0 right-0 text-gray-600"
             >
               ✕
             </button>
