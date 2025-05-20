@@ -19,6 +19,7 @@ const EditPanel = ({ onCopy, onCut, onPaste, onDelete, onSelectAll, refreshSideb
     const [showFilter, setShowFilter] = useState(false); // เพิ่มการประกาศ State
      const [columns, setColumns] = useState([]);
      const [filteredData, setFilteredData] = useState(null);
+    const router = useRouter();
 
     // ✅ เมื่อ selectedFile เปลี่ยน ให้ดึงข้อมูลและอัปเดตคอลัมน์
  useEffect(() => {
@@ -369,22 +370,79 @@ const handleFileChange = async (event) => {
                     onClick={() => {
                         setShowPopup(false);
                         resetPosition();
-                    }}
-                    className="absolute top-2 right-2 text-gray-500"
-                >
-                    ╳
-                </button>
-                <button
-                    onClick={toggleFullScreen}
-                    className="absolute text-2xl text-gray-500 top-1 right-10"
-                >
-                    {isFullScreen ? "🗗" : "▢"}
-                </button>
-                <TablePage fileName={fileName} />
-            </div>
-        </Rnd>
-    </div>
-)}
+
+                        }}
+                        className="absolute top-2 right-2 text-gray-500"
+                    >
+                        ╳
+                    </button>
+                    <button
+                        onClick={toggleFullScreen}
+                        className="absolute text-2xl text-gray-500 top-1 right-10"
+                    >
+                        {isFullScreen ? "🗗" : "▢"}
+                    </button>
+                    <TablePage fileName={fileName} />
+                    <div className="absolute bottom-6 right-0 w-full flex flex-row justify-end bg-white space-x-4 px-8 py-2 ">
+
+                        <button 
+                            className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400"
+                            
+                            // onClick={async () => {
+                            //     try {
+                            //         if (!fileName) {
+                            //             alert("❗ กรุณาเลือกไฟล์ก่อน");
+                            //             return;
+                            //         }
+                        
+                            //         //  ✅ สร้าง FormData สำหรับอัปโหลด
+                            //         const formData = new FormData();
+                            //         formData.append("file", fileInputRef.current.files[0]);
+                            //         formData.append("fileName", fileName);
+                                
+                            //         // ✅ เรียก API เพื่ออัปโหลดข้อมูล
+                            //         const res = await fetch("/api/upload", { // <--- เปลี่ยน Path ให้ถูกต้อง
+                            //             method: "POST",
+                            //             body: formData,
+                            //         });
+                                
+                            //         const result = await res.json();
+                            //         if (!res.ok) {
+                            //             throw new Error(result.error || "ไม่สามารถอัปโหลดข้อมูลได้");
+                            //         }
+                                
+                            //         alert("✅ อัปโหลดข้อมูลลงฐานข้อมูลเรียบร้อยแล้ว!");
+                                
+                            //         // ✅ ปิด Popup หลังจากอัปโหลดเสร็จ
+                            //         setShowPopup(false); 
+                            //         resetPosition(); 
+                                
+                            //     } catch (error) {
+                            //         console.error("❌ Upload & Save Report Error:", error.message);
+                            //         alert("❌ เกิดข้อผิดพลาดระหว่างการอัปโหลดข้อมูล");
+                            //     }
+                            // }} 
+                        >
+                        Upload
+                        </button>
+
+                        <button className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400" >
+                        Processing Data
+                        </button>
+
+                        <button
+                        onClick={() => setShowPopup(false)}
+                        className="border-2 text-gray-900 px-4 text-sm hover:bg-gray-400"
+                        >
+                        Cancel
+                        </button>
+
+                    </div>
+                    </div>
+                </Rnd>
+                </div>
+            )}
+
 
                     {/* refresh */}
                 <button 
@@ -443,7 +501,7 @@ const handleFileChange = async (event) => {
                 )}
 
                  {/* Processing Data*/}
-                 <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm">
+                 <button className="flex px-2 h-full hover:bg-[#E3E3E3] items-center border-r-2 text-sm" onClick={() => router.push('/DataProcessing')}>
                     <img 
                         src="/transform.png" alt="transformData" style={{ width: '38px', height: 'auto' }} 
                         className=" px-2 max-h-full object-contain "

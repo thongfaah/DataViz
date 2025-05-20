@@ -2,30 +2,154 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../Sidebar/page";
 import Nav1 from "../navbar/page";
-import { useRouter } from "next/navigation";
-import { Rnd } from "react-rnd"; // Import Rnd
 import CsvTxtParser2 from "../CsvTxtParser2/page";
+import { useFileContext } from "../FileContext/page";
+import { useRouter } from "next/navigation";
+import { Rnd } from "react-rnd";
 
 const Create = () => {
-  const [fileContent, setFileContent] = useState('');
-  const [delimiter, setDelimiter] = useState(',');
   const [loading, setLoading] = useState(false);
-  const [showPopup, setShowPopup] = useState(false); // State for popup
-  const [fileName, setFileName] = useState(""); // State for file name
-  const [isFullScreen, setIsFullScreen] = useState(false); // State for fullscreen
-  const [size, setSize] = useState({ width: 1000, height: 700 }); // State for size
-  const [position, setPosition] = useState({ x: 0, y: 0 }); // เริ่มที่ (0,0)
+  const [showPopup, setShowPopup] = useState(false);
+  const [fileName, setFileName] = useState("");
+  const [delimiter, setDelimiter] = useState(",");
+  const [fileContent, setFileContent] = useState("");
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [size, setSize] = useState({ width: 1000, height: 700 });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
   const router = useRouter();
 
-  const handleUploadClick = () => {
-    router.push('/Dashboard');
-  };
-
-  const handleProcessingClick = () => {
-    router.push('/DataProcessing');
-  };
-
   const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      setFileContent(text);
+      setDelimiter("auto");
+      setShowPopup(true); // เปิด Popup
+    };
+    reader.readAsText(file);
+  };
+
+  const toggleFullScreen = () => {
+    if (isFullScreen) {
+      centerPopup();
+    } else {
+      setPosition({ x: 0, y: 0 });
+    }
+    setIsFullScreen(!isFullScreen);
+  };
+
+  const centerPopup = () => {
+    if (typeof window !== "undefined") {
+      setPosition({
+        x: (window.innerWidth - size.width) / 2,
+        y: (window.innerHeight - size.height) / 2,
+      });
+    }
+  };
+
+  const keepPopupInViewport = () => {
+    if (typeof window !== "undefined") {
+      setPosition((prev) => ({
+        x: Math.min(Math.max(prev.x, 0), window.innerWidth - size.width),
+        y: Math.min(Math.max(prev.y, 0), window.innerHeight - size.height),
+      }));
+    }
+  };
+
+  useEffect(() => {
+    centerPopup();
+  }, [size]);
+
+  useEffect(() => {
+    if (!isFullScreen) {
+      keepPopupInViewport();
+    }
+  }, [size, isFullScreen]);
+
+  const closePopup = () => {
+    setShowPopup(false);
+  };
+
+  return (
+    <div className="fixed top-0 left-0 w-full z-50">
+      <Nav1 />
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-1 flex-wrap relative min-h-screen bg-[#F5F5F5] ml-[5.5rem]">
+          <h1 className="absolute top-12 left-16 text-2xl font-bold text-[#2B3A67]">
+            Import Data
+          </h1>
+
+          <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <label htmlFor="file-uploadCSV">
+              <img
+                src="/createCSV.png"
+                alt="CreateCSV"
+                style={{ width: "300px", height: "auto" }}
+                className="absolute top-28 left-16 max-w-full max-h-full object-contain"
+              />
+            </label>
+            <input
+              id="file-uploadCSV"
+              type="file"
+              className="hidden"
+              accept=".csv"
+              onChange={handleFileUpload}
+            />
+            {loading && <p className="text-red-500 mt-4">Uploading...</p>}
+          </div>
+
+          <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <label htmlFor="file-uploadtxt">
+              <img
+                src="/createtxt.png"
+                alt="Createtxt"
+                style={{ width: "290px", height: "auto" }}
+                className="absolute top-28 left-1/4 max-w-full max-h-full object-contain"
+              />
+            </label>
+            <input
+              id="file-uploadtxt"
+              type="file"
+              className="hidden"
+              accept=".txt"
+              onChange={handleFileUpload}
+            />
+            {loading && <p className="text-red-500 mt-4">Uploading...</p>}
+          </div>
+
+          <h1 className="absolute top-96 left-1/3 text-2xl font-bold text-[#2B3A67]">
+            เลือก data ลงในรายงานของคุณ
+          </h1>
+
+          {/** Render Popup */}
+          {showPopup && (
+            <CsvTxtParser2
+              fileName={fileName}
+              fileContent={fileContent}
+              delimiter={delimiter}
+              closePopup={closePopup}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Create;
+
+
+
+
+
+
+{/*const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -58,102 +182,9 @@ const Create = () => {
 
     reader.readAsText(file, "UTF-8");
   };
-
-  const toggleFullScreen = () => {
-    if (isFullScreen) {
-      centerPopup();
-    } else {
-      setPosition({ x: 0, y: 0 });
-    }
-    setIsFullScreen(!isFullScreen);
-  };
-
-  const centerPopup = () => {
-    if (typeof window !== "undefined") {
-      setPosition({
-        x: (window.innerWidth - size.width) / 2,
-        y: (window.innerHeight - size.height) / 2,
-      });
-    }
-  };
-
-  const keepPopupInViewport = () => {
-    if (typeof window !== "undefined") {
-      setPosition((prev) => ({
-        x: Math.min(Math.max(prev.x, 0), window.innerWidth - size.width),
-        y: Math.min(Math.max(prev.y, 0), window.innerHeight - size.height),
-      }));
-    }
-  };
-
-  useEffect(() => {
-    centerPopup(); // Center popup หลังโหลด
-  }, [size]);
-
-  useEffect(() => {
-    if (!isFullScreen) {
-      keepPopupInViewport();
-    }
-  }, [size, isFullScreen]);
-
-  return (
-    <div className="fixed top-0 left-0 w-full z-50">
-      <Nav1 />
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 flex-wrap relative min-h-screen bg-[#F5F5F5] ml-[5.5rem]">
-          <h1 className="absolute top-12 left-16 text-2xl font-bold text-[#2B3A67]">
-            Import Data
-          </h1>
-
-          {/* อัปโหลดไฟล์ CSV */}
-          <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <label htmlFor="file-uploadCSV">
-              <img
-                src="/createCSV.png"
-                alt="CreateCSV"
-                style={{ width: "300px", height: "auto" }}
-                className="absolute top-28 left-16 max-w-full max-h-full object-contain"
-              />
-            </label>
-            <input
-              id="file-uploadCSV"
-              type="file"
-              className="hidden"
-              accept=".csv" 
-              onChange={handleFileUpload}
-            />
-            {loading && <p className="text-red-500 mt-4">Uploading...</p>}
-          </div>
-
-          {/* อัปโหลดไฟล์ TXT */}
-          <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <label htmlFor="file-uploadtxt">
-              <img
-                src="/createtxt.png"
-                alt="Createtxt"
-                style={{ width: "290px", height: "auto" }}
-                className="absolute top-28 left-1/4 max-w-full max-h-full object-contain"
-              />
-            </label>
-            <input
-              id="file-uploadtxt"
-              type="file"
-              className="hidden"
-              accept=".txt" 
-              onChange={handleFileUpload}
-            />
-            {loading && <p className="text-red-500 mt-4">Uploading...</p>}
-          </div>
-
-          <h1 className="absolute top-96 left-1/3 text-2xl font-bold text-[#2B3A67]">
-            เลือก data ลงในรายงานของคุณ
-          </h1>
-        </div>
-      </div>
-
-      {/* Popup ส่วนแสดงผล */}
-      {showPopup && (
+  */}
+{/* Popup ส่วนแสดงผล */}
+      {/*{showPopup && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <Rnd
             size={isFullScreen ? { width: "100%", height: "100%" } : size}
@@ -188,9 +219,4 @@ const Create = () => {
             </div>
           </Rnd>
         </div>
-      )}
-    </div>
-  );
-};
-
-export default Create;
+)}*/}
